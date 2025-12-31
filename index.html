@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbrDiary - Diary Pribadi</title>
+    <title>AbrDiary - Diary Online</title>
     <style>
         * {
             margin: 0;
@@ -16,6 +16,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #333;
         }
         
         .container {
@@ -29,24 +30,28 @@
         
         /* Login Screen */
         .login-screen {
-            padding: 50px 30px;
+            padding: 60px 40px;
             text-align: center;
         }
         
-        .login-screen h1 {
+        .login-box {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .login-box h1 {
             color: #4f46e5;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             font-size: 2.5rem;
         }
         
-        .login-screen p {
+        .login-box p {
             color: #666;
             margin-bottom: 30px;
         }
         
         .password-box {
-            max-width: 300px;
-            margin: 0 auto;
+            margin: 30px 0;
         }
         
         .password-box input {
@@ -69,6 +74,11 @@
             cursor: pointer;
             width: 100%;
             font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: #4338ca;
         }
         
         .error-msg {
@@ -77,13 +87,17 @@
             display: none;
         }
         
-        .firebase-info {
+        .firebase-status {
             margin-top: 30px;
             padding: 15px;
             background: #f8fafc;
             border-radius: 10px;
-            font-size: 14px;
             text-align: left;
+        }
+        
+        .firebase-status h3 {
+            color: #4f46e5;
+            margin-bottom: 10px;
         }
         
         /* Main App */
@@ -91,6 +105,7 @@
             display: none;
         }
         
+        /* Header */
         .app-header {
             background: linear-gradient(90deg, #4f46e5, #7c3aed);
             color: white;
@@ -107,7 +122,7 @@
             font-size: 1.5rem;
         }
         
-        .status-badge {
+        .connection-status {
             background: rgba(255,255,255,0.2);
             padding: 8px 15px;
             border-radius: 20px;
@@ -117,6 +132,15 @@
             gap: 8px;
         }
         
+        .online {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .offline {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Main Content */
         .main-content {
             display: flex;
             min-height: 600px;
@@ -153,12 +177,19 @@
             border: 2px solid #d1d5db;
             border-radius: 8px;
             font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4f46e5;
         }
         
         textarea.form-control {
             min-height: 150px;
             resize: vertical;
             font-family: inherit;
+            line-height: 1.6;
         }
         
         /* Tags */
@@ -216,6 +247,11 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .add-tag-btn:hover {
+            background: #0da271;
         }
         
         /* Action Buttons */
@@ -242,6 +278,7 @@
         
         .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .btn-primary {
@@ -275,17 +312,12 @@
             font-size: 1.3rem;
         }
         
-        .sync-btn {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
+        .sync-info {
             font-size: 14px;
+            color: #6b7280;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         
         .entries-list {
@@ -401,6 +433,29 @@
             z-index: 1000;
         }
         
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .main-content {
@@ -429,21 +484,24 @@
     <div class="container">
         <!-- Login Screen -->
         <div class="login-screen" id="loginScreen">
-            <h1>📔 AbrDiary</h1>
-            <p>Diary pribadi Anda dengan backup cloud Firebase</p>
-            
-            <div class="password-box">
-                <input type="password" id="passwordInput" placeholder="Masukkan password" autocomplete="off">
-                <button class="login-btn" id="loginBtn">
-                    <span>🔐</span> MASUK KE DIARY
-                </button>
-                <div class="error-msg" id="errorMsg">
-                    Password salah! Password: 12354
+            <div class="login-box">
+                <h1>📔 AbrDiary</h1>
+                <p>Diary online dengan Firebase Realtime Database</p>
+                
+                <div class="password-box">
+                    <input type="password" id="passwordInput" placeholder="Masukkan password" autocomplete="off">
+                    <button class="login-btn" id="loginBtn">
+                        <span>🔐</span> MASUK KE DIARY
+                    </button>
+                    <div class="error-msg" id="errorMsg">
+                        Password salah! Password: 12354
+                    </div>
                 </div>
-            </div>
-            
-            <div class="firebase-info" id="firebaseInfo">
-                <strong>Status Firebase:</strong> <span id="firebaseStatus">Memeriksa koneksi...</span>
+                
+                <div class="firebase-status" id="firebaseStatus">
+                    <h3>Status Koneksi:</h3>
+                    <div id="firebaseInfo">Memeriksa koneksi Firebase...</div>
+                </div>
             </div>
         </div>
         
@@ -453,16 +511,22 @@
             <div class="app-header">
                 <div class="app-title">
                     <span>📔</span>
-                    <span>AbrDiary</span>
+                    <span>AbrDiary - Online</span>
                 </div>
-                <div class="status-badge" id="statusBadge">
+                <div class="connection-status" id="connectionStatus">
                     <span id="statusIcon">🌐</span>
-                    <span id="statusText">Memeriksa koneksi...</span>
+                    <span id="statusText">Memeriksa...</span>
                 </div>
             </div>
             
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Memuat data dari cloud...</p>
+            </div>
+            
             <!-- Main Content -->
-            <div class="main-content">
+            <div class="main-content" id="mainContent" style="display: none;">
                 <!-- Left: Editor -->
                 <div class="editor-panel">
                     <h2 class="editor-title">✍️ Tulis Entri Baru</h2>
@@ -491,7 +555,7 @@
                     
                     <div class="action-buttons">
                         <button class="btn btn-primary" id="saveBtn">
-                            <span>💾</span> SIMPAN ENTRY
+                            <span>💾</span> SIMPAN KE CLOUD
                         </button>
                         <button class="btn btn-secondary" id="clearBtn">
                             <span>🗑️</span> BERSIHKAN
@@ -503,9 +567,10 @@
                 <div class="entries-panel">
                     <div class="entries-header">
                         <h2 class="entries-title">📚 Entri Sebelumnya</h2>
-                        <button class="sync-btn" id="syncBtn">
-                            <span>🔄</span> SYNC
-                        </button>
+                        <div class="sync-info">
+                            <span id="syncIcon">🔄</span>
+                            <span id="syncText">Realtime</span>
+                        </div>
                     </div>
                     
                     <div class="entries-list" id="entriesList">
@@ -548,7 +613,6 @@
             tags: ['Pribadi', 'Kerja', 'Hobi', 'Keluaraga'],
             selectedTags: new Set(),
             editingEntryId: null,
-            isOnline: navigator.onLine,
             firebase: {
                 app: null,
                 db: null,
@@ -574,20 +638,10 @@
             
             // Initialize Firebase
             initFirebase();
-            
-            // Update status koneksi
-            updateConnectionStatus();
-            
-            // Setup online/offline detection
-            window.addEventListener('online', handleOnline);
-            window.addEventListener('offline', handleOffline);
-            
-            // Cek login sebelumnya
-            checkPreviousLogin();
         }
         
         function initFirebase() {
-            console.log("Initializing Firebase with config:", firebaseConfig.projectId);
+            console.log("Initializing Firebase...");
             updateFirebaseStatus("Menghubungkan ke Firebase...");
             
             try {
@@ -614,55 +668,61 @@
                                 updateFirebaseStatus("✅ Firebase siap digunakan!");
                                 updateConnectionStatus();
                                 
-                                // Auto sync jika online
-                                if (state.isOnline) {
-                                    setTimeout(() => {
-                                        loadFromFirebase();
-                                    }, 2000);
-                                }
+                                // Load initial data
+                                loadDataFromFirebase();
                             } else {
                                 updateFirebaseStatus("❌ Firebase terputus", "error");
+                                updateConnectionStatus();
                             }
                         });
                     })
                     .catch((error) => {
                         console.error("Firebase auth error:", error);
                         updateFirebaseStatus("❌ Gagal login: " + error.message, "error");
+                        updateConnectionStatus();
                     });
                     
             } catch (error) {
                 console.error("Firebase init error:", error);
                 updateFirebaseStatus("❌ Error: " + error.message, "error");
+                updateConnectionStatus();
             }
         }
         
         function updateFirebaseStatus(message, type = "info") {
-            const statusEl = document.getElementById('firebaseStatus');
-            const infoEl = document.getElementById('firebaseInfo');
+            const statusEl = document.getElementById('firebaseInfo');
+            const container = document.getElementById('firebaseStatus');
             
             statusEl.textContent = message;
             
             if (type === "error") {
-                infoEl.style.background = "#fee2e2";
-                infoEl.style.border = "1px solid #fecaca";
+                container.style.background = "#fee2e2";
+                container.style.border = "1px solid #fecaca";
                 statusEl.style.color = "#dc2626";
             } else if (type === "success") {
-                infoEl.style.background = "#d1fae5";
-                infoEl.style.border = "1px solid #a7f3d0";
+                container.style.background = "#d1fae5";
+                container.style.border = "1px solid #a7f3d0";
                 statusEl.style.color = "#059669";
             } else {
-                infoEl.style.background = "#f8fafc";
-                infoEl.style.border = "1px solid #e2e8f0";
+                container.style.background = "#f8fafc";
+                container.style.border = "1px solid #e2e8f0";
                 statusEl.style.color = "#4b5563";
             }
         }
         
-        function checkPreviousLogin() {
-            const savedLogin = localStorage.getItem(`${APP_NAME}_logged_in`);
-            if (savedLogin === 'true') {
-                // Auto login for convenience
-                // Dalam production, hapus ini
-                handleLoginSuccess();
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            const icon = document.getElementById('statusIcon');
+            const text = document.getElementById('statusText');
+            
+            if (state.firebase.connected) {
+                statusEl.className = "connection-status online";
+                icon.textContent = '🌐';
+                text.textContent = 'Online - Cloud terhubung';
+            } else {
+                statusEl.className = "connection-status offline";
+                icon.textContent = '📴';
+                text.textContent = 'Offline - Tidak bisa menyimpan';
             }
         }
         
@@ -685,7 +745,6 @@
             // Entries
             document.getElementById('saveBtn').addEventListener('click', saveEntry);
             document.getElementById('clearBtn').addEventListener('click', clearForm);
-            document.getElementById('syncBtn').addEventListener('click', forceSync);
         }
         
         function handleLogin() {
@@ -703,183 +762,160 @@
         }
         
         function handleLoginSuccess() {
-            // Save login state
+            // Save login state (opsional)
             localStorage.setItem(`${APP_NAME}_logged_in`, 'true');
             
             // Show main app
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             
-            // Load data
-            loadLocalData();
-            displayTags();
-            displayEntries();
-        }
-        
-        function handleOnline() {
-            state.isOnline = true;
-            updateConnectionStatus();
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
             
-            if (state.firebase.connected) {
-                // Auto sync saat online kembali
-                setTimeout(loadFromFirebase, 1000);
-            }
-        }
-        
-        function handleOffline() {
-            state.isOnline = false;
-            updateConnectionStatus();
-            showNotification("Mode offline - Data disimpan lokal", "warning");
-        }
-        
-        function updateConnectionStatus() {
-            const statusBadge = document.getElementById('statusBadge');
-            const statusIcon = document.getElementById('statusIcon');
-            const statusText = document.getElementById('statusText');
+            // Setup realtime listener untuk entries
+            setupRealtimeListener();
             
-            if (state.isOnline && state.firebase.connected) {
-                statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
-                statusIcon.textContent = '🌐';
-                statusText.textContent = 'Online - Cloud terhubung';
-            } else if (state.isOnline && !state.firebase.connected) {
-                statusBadge.style.background = 'rgba(245, 158, 11, 0.2)';
-                statusIcon.textContent = '⚠️';
-                statusText.textContent = 'Online - Cloud error';
-            } else {
-                statusBadge.style.background = 'rgba(156, 163, 175, 0.2)';
-                statusIcon.textContent = '📴';
-                statusText.textContent = 'Offline - Mode lokal';
-            }
+            // Load tags dari Firebase
+            loadTagsFromFirebase();
         }
         
         // ============================================
-        // DATA MANAGEMENT
+        // FIREBASE REALTIME LISTENER
         // ============================================
-        function loadLocalData() {
-            // Load entries
-            const savedEntries = localStorage.getItem(`${APP_NAME}_entries`);
-            state.entries = savedEntries ? JSON.parse(savedEntries) : [];
+        function setupRealtimeListener() {
+            if (!state.firebase.db || !state.firebase.userId) {
+                showNotification("Firebase belum siap", "error");
+                return;
+            }
             
-            // Load tags
-            const savedTags = localStorage.getItem(`${APP_NAME}_tags`);
-            if (savedTags) {
-                state.tags = JSON.parse(savedTags);
+            // Setup realtime listener untuk entries
+            state.firebase.db.ref(`users/${state.firebase.userId}/entries`)
+                .on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    
+                    if (data) {
+                        // Convert object ke array
+                        const entriesArray = Object.values(data);
+                        
+                        // Sort by date (newest first)
+                        state.entries = entriesArray.sort((a, b) => 
+                            new Date(b.created) - new Date(a.created)
+                        );
+                        
+                        // Update UI
+                        displayEntries();
+                        
+                        // Hide loading, show content
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'flex';
+                        
+                        // Update sync info
+                        document.getElementById('syncText').textContent = 
+                            `Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
+                    } else {
+                        // Tidak ada data
+                        state.entries = [];
+                        displayEntries();
+                        
+                        // Hide loading, show content
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('mainContent').style.display = 'flex';
+                    }
+                }, (error) => {
+                    console.error("Realtime listener error:", error);
+                    showNotification("Gagal memuat data realtime", "error");
+                });
+        }
+        
+        // ============================================
+        // FIREBASE DATA OPERATIONS
+        // ============================================
+        async function loadDataFromFirebase() {
+            if (!state.firebase.db || !state.firebase.userId) return;
+            
+            try {
+                const snapshot = await state.firebase.db.ref(`users/${state.firebase.userId}/entries`).once('value');
+                const data = snapshot.val();
+                
+                if (data) {
+                    state.entries = Object.values(data);
+                    displayEntries();
+                    showNotification("Data dimuat dari cloud", "success");
+                }
+            } catch (error) {
+                console.error("Load data error:", error);
+                showNotification("Gagal memuat data: " + error.message, "error");
             }
         }
         
-        function saveLocalData() {
-            localStorage.setItem(`${APP_NAME}_entries`, JSON.stringify(state.entries));
-            localStorage.setItem(`${APP_NAME}_tags`, JSON.stringify(state.tags));
+        async function loadTagsFromFirebase() {
+            if (!state.firebase.db || !state.firebase.userId) return;
+            
+            try {
+                const snapshot = await state.firebase.db.ref(`users/${state.firebase.userId}/tags`).once('value');
+                const data = snapshot.val();
+                
+                if (data) {
+                    state.tags = data;
+                }
+                
+                displayTags();
+            } catch (error) {
+                console.error("Load tags error:", error);
+                // Tetap tampilkan default tags
+                displayTags();
+            }
         }
         
-        async function saveToFirebase(entry) {
+        async function saveTagsToFirebase() {
             if (!state.firebase.db || !state.firebase.userId || !state.firebase.connected) {
-                console.log("Tidak bisa save ke Firebase: tidak terhubung");
+                showNotification("Tidak terhubung ke cloud", "error");
                 return false;
             }
             
             try {
-                // Save to Realtime Database
+                await state.firebase.db.ref(`users/${state.firebase.userId}/tags`).set(state.tags);
+                console.log("✅ Tags saved to Firebase");
+                return true;
+            } catch (error) {
+                console.error("❌ Save tags error:", error);
+                showNotification("Gagal menyimpan tags: " + error.message, "error");
+                return false;
+            }
+        }
+        
+        async function saveEntryToFirebase(entry) {
+            if (!state.firebase.db || !state.firebase.userId || !state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return false;
+            }
+            
+            try {
                 await state.firebase.db.ref(`users/${state.firebase.userId}/entries/${entry.id}`).set(entry);
                 console.log("✅ Entry saved to Firebase:", entry.id);
                 return true;
             } catch (error) {
-                console.error("❌ Firebase save error:", error);
+                console.error("❌ Save entry error:", error);
+                showNotification("Gagal menyimpan: " + error.message, "error");
                 return false;
             }
         }
         
-        async function loadFromFirebase() {
-            if (!state.isOnline || !state.firebase.connected) {
-                showNotification("Tidak bisa sync: offline atau Firebase error", "error");
-                return;
+        async function deleteEntryFromFirebase(entryId) {
+            if (!state.firebase.db || !state.firebase.userId || !state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return false;
             }
             
             try {
-                showNotification("Memuat data dari cloud...", "info");
-                
-                // Download dari Firebase
-                const snapshot = await state.firebase.db.ref(`users/${state.firebase.userId}/entries`).once('value');
-                const firebaseData = snapshot.val();
-                
-                if (firebaseData) {
-                    const firebaseEntries = Object.values(firebaseData);
-                    
-                    // Merge dengan data lokal
-                    const localIds = new Set(state.entries.map(e => e.id));
-                    let newEntries = 0;
-                    
-                    for (const fbEntry of firebaseEntries) {
-                        if (!localIds.has(fbEntry.id)) {
-                            state.entries.push(fbEntry);
-                            newEntries++;
-                        }
-                    }
-                    
-                    if (newEntries > 0) {
-                        saveLocalData();
-                        displayEntries();
-                        showNotification(`Diperbarui: ${newEntries} entri dari cloud`, "success");
-                    } else {
-                        showNotification("Data sudah up-to-date", "info");
-                    }
-                } else {
-                    showNotification("Tidak ada data di cloud", "info");
-                }
-                
+                await state.firebase.db.ref(`users/${state.firebase.userId}/entries/${entryId}`).remove();
+                console.log("✅ Entry deleted from Firebase:", entryId);
+                return true;
             } catch (error) {
-                console.error("❌ Load from Firebase error:", error);
-                showNotification("Gagal memuat dari cloud", "error");
+                console.error("❌ Delete entry error:", error);
+                showNotification("Gagal menghapus: " + error.message, "error");
+                return false;
             }
-        }
-        
-        async function syncToFirebase() {
-            if (!state.isOnline || !state.firebase.connected) {
-                showNotification("Tidak bisa sync: offline atau Firebase error", "error");
-                return;
-            }
-            
-            try {
-                showNotification("Mengupload data ke cloud...", "info");
-                
-                // Upload semua entries lokal ke Firebase
-                for (const entry of state.entries) {
-                    await saveToFirebase(entry);
-                }
-                
-                showNotification("✅ Semua data diupload ke cloud", "success");
-                
-            } catch (error) {
-                console.error("❌ Sync to Firebase error:", error);
-                showNotification("Gagal upload ke cloud", "error");
-            }
-        }
-        
-        function forceSync() {
-            if (!state.isOnline) {
-                showNotification("Anda sedang offline", "error");
-                return;
-            }
-            
-            if (!state.firebase.connected) {
-                showNotification("Firebase tidak terhubung", "error");
-                return;
-            }
-            
-            const syncBtn = document.getElementById('syncBtn');
-            syncBtn.innerHTML = '<span>🔄</span> SYNCING...';
-            syncBtn.disabled = true;
-            
-            // Lakukan dua arah sync
-            Promise.all([
-                syncToFirebase(),
-                loadFromFirebase()
-            ]).finally(() => {
-                setTimeout(() => {
-                    syncBtn.innerHTML = '<span>🔄</span> SYNC';
-                    syncBtn.disabled = false;
-                }, 2000);
-            });
         }
         
         // ============================================
@@ -894,7 +930,7 @@
                 tagEl.className = `tag ${state.selectedTags.has(tag) ? 'active' : ''}`;
                 tagEl.innerHTML = `
                     ${tag}
-                    ${tag !== 'Pribadi' ? '<span style="margin-left: 5px; cursor: pointer;" onclick="event.stopPropagation(); removeTag(\'' + tag + '\')">×</span>' : ''}
+                    ${tag !== 'Pribadi' ? '<span style="margin-left: 5px; cursor: pointer; font-size: 12px;" onclick="event.stopPropagation(); removeTag(\'' + tag + '\')">×</span>' : ''}
                 `;
                 tagEl.onclick = () => toggleTag(tag);
                 container.appendChild(tagEl);
@@ -910,7 +946,12 @@
             displayTags();
         }
         
-        function addTag() {
+        async function addTag() {
+            if (!state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return;
+            }
+            
             const input = document.getElementById('newTagInput');
             const newTag = input.value.trim();
             
@@ -924,14 +965,23 @@
                 return;
             }
             
+            // Add to local state
             state.tags.push(newTag);
-            saveLocalData();
             displayTags();
-            input.value = '';
-            showNotification(`Tag "${newTag}" ditambahkan`, "success");
+            
+            // Save to Firebase
+            const success = await saveTagsToFirebase();
+            if (success) {
+                showNotification(`Tag "${newTag}" ditambahkan`, "success");
+                input.value = '';
+            } else {
+                // Rollback jika gagal
+                state.tags = state.tags.filter(t => t !== newTag);
+                displayTags();
+            }
         }
         
-        function removeTag(tag) {
+        async function removeTag(tag) {
             if (tag === 'Pribadi') {
                 showNotification("Tag 'Pribadi' tidak bisa dihapus", "error");
                 return;
@@ -939,21 +989,35 @@
             
             if (!confirm(`Hapus tag "${tag}"?`)) return;
             
-            // Hapus dari array tags
+            if (!state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return;
+            }
+            
+            // Remove from local state
+            const originalTags = [...state.tags];
             state.tags = state.tags.filter(t => t !== tag);
-            
-            // Hapus dari selected tags
             state.selectedTags.delete(tag);
-            
-            saveLocalData();
             displayTags();
-            showNotification(`Tag "${tag}" dihapus`, "success");
+            
+            // Save to Firebase
+            const success = await saveTagsToFirebase();
+            if (!success) {
+                // Rollback jika gagal
+                state.tags = originalTags;
+                displayTags();
+            }
         }
         
         // ============================================
         // ENTRIES MANAGEMENT
         // ============================================
-        function saveEntry() {
+        async function saveEntry() {
+            if (!state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return;
+            }
+            
             const date = document.getElementById('entryDate').value;
             const content = document.getElementById('entryContent').value.trim();
             
@@ -968,7 +1032,7 @@
             }
             
             const entry = {
-                id: state.editingEntryId || `entry_${Date.now()}`,
+                id: state.editingEntryId || `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 date: date,
                 tags: Array.from(state.selectedTags),
                 content: content,
@@ -976,38 +1040,28 @@
                 updated: new Date().toISOString()
             };
             
-            if (state.editingEntryId) {
-                // Update existing entry
-                const index = state.entries.findIndex(e => e.id === state.editingEntryId);
-                if (index !== -1) {
-                    state.entries[index] = entry;
+            // Show saving notification
+            showNotification("Menyimpan ke cloud...", "info");
+            
+            // Save to Firebase
+            const success = await saveEntryToFirebase(entry);
+            
+            if (success) {
+                if (state.editingEntryId) {
+                    showNotification("✅ Entry diperbarui di cloud", "success");
+                    state.editingEntryId = null;
+                    document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN KE CLOUD';
+                } else {
+                    showNotification("✅ Entry disimpan ke cloud", "success");
                 }
-                state.editingEntryId = null;
-                document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN ENTRY';
-            } else {
-                // Add new entry
-                state.entries.push(entry);
+                
+                // Clear form
+                clearForm();
+                
+                // Update sync info
+                document.getElementById('syncText').textContent = 
+                    `Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
             }
-            
-            // Save to localStorage
-            saveLocalData();
-            
-            // Try to save to Firebase
-            if (state.isOnline && state.firebase.connected) {
-                saveToFirebase(entry).then(success => {
-                    if (success) {
-                        showNotification("✅ Entry tersimpan di cloud", "success");
-                    } else {
-                        showNotification("Entry disimpan lokal, akan sync nanti", "info");
-                    }
-                });
-            } else {
-                showNotification("Entry disimpan lokal", "info");
-            }
-            
-            // Update UI
-            displayEntries();
-            clearForm();
         }
         
         function editEntry(entryId) {
@@ -1021,31 +1075,30 @@
             displayTags();
             
             state.editingEntryId = entryId;
-            document.getElementById('saveBtn').innerHTML = '<span>✏️</span> UPDATE ENTRY';
+            document.getElementById('saveBtn').innerHTML = '<span>✏️</span> UPDATE DI CLOUD';
             
             // Scroll to editor
             document.querySelector('.editor-panel').scrollIntoView({ behavior: 'smooth' });
         }
         
         async function deleteEntry(entryId) {
-            if (!confirm("Hapus entry ini?")) return;
+            if (!confirm("Hapus entry ini dari cloud?")) return;
             
-            // Remove from local
-            state.entries = state.entries.filter(e => e.id !== entryId);
-            saveLocalData();
-            
-            // Try to delete from Firebase
-            if (state.isOnline && state.firebase.connected && state.firebase.userId) {
-                try {
-                    await state.firebase.db.ref(`users/${state.firebase.userId}/entries/${entryId}`).remove();
-                    console.log("✅ Entry deleted from Firebase");
-                } catch (error) {
-                    console.error("❌ Firebase delete error:", error);
-                }
+            if (!state.firebase.connected) {
+                showNotification("Tidak terhubung ke cloud", "error");
+                return;
             }
             
-            displayEntries();
-            showNotification("Entry dihapus", "success");
+            // Delete from Firebase
+            const success = await deleteEntryFromFirebase(entryId);
+            
+            if (success) {
+                showNotification("Entry dihapus dari cloud", "success");
+                
+                // Update sync info
+                document.getElementById('syncText').textContent = 
+                    `Diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
+            }
         }
         
         function displayEntries() {
@@ -1057,20 +1110,21 @@
                         <div>📝</div>
                         <h3>Belum ada entry</h3>
                         <p>Mulailah menulis diary pertama Anda!</p>
+                        <p style="font-size: 14px; margin-top: 10px; color: #6b7280;">
+                            Semua data disimpan langsung di Firebase Cloud
+                        </p>
                     </div>
                 `;
                 return;
             }
             
-            // Sort by date (newest first)
-            const sortedEntries = [...state.entries].sort((a, b) => 
-                new Date(b.date) - new Date(a.date)
-            );
-            
-            container.innerHTML = sortedEntries.map(entry => `
+            container.innerHTML = state.entries.map(entry => `
                 <div class="entry-card">
                     <div class="entry-header">
                         <div class="entry-date">${formatDate(entry.date)}</div>
+                        <div style="font-size: 12px; color: #9ca3af;">
+                            ${formatTime(entry.created)}
+                        </div>
                     </div>
                     
                     ${entry.tags && entry.tags.length > 0 ? `
@@ -1109,7 +1163,7 @@
             
             // Reset editing mode
             state.editingEntryId = null;
-            document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN ENTRY';
+            document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN KE CLOUD';
         }
         
         // ============================================
@@ -1122,6 +1176,14 @@
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
+            });
+        }
+        
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
         
