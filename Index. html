@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AbrDiary - Diary Pribadi</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📔</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            height: 95vh;
+        }
+        
+        /* Login Screen */
+        #loginScreen {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .login-box {
+            background: rgba(255,255,255,0.95);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .login-box h1 {
+            color: #4f46e5;
+            margin-bottom: 10px;
+            font-size: 2.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .password-input {
+            margin: 30px 0;
+        }
+        
+        .password-input input {
+            width: 100%;
+            padding: 18px;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+        
+        .login-btn {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .error-msg {
+            color: #ef4444;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        /* Main App */
+        #mainApp {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .app-header {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.6rem;
+        }
+        
+        .status-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Editor Panel */
+        .editor-panel {
+            flex: 2;
+            padding: 30px;
+            overflow-y: auto;
+            border-right: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+        
+        .editor-title {
+            color: #374151;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        textarea.form-control {
+            min-height: 180px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        
+        /* Tags */
+        .tags-section {
+            margin: 25px 0;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .tag {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .tag:hover {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .tag.active {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        
+        .tag-remove {
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .add-tag-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .add-tag-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+        }
+        
+        .add-tag-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+        }
+        
+        /* Entries Panel */
+        .entries-panel {
+            flex: 1.5;
+            padding: 30px;
+            overflow-y: auto;
+            background: white;
+        }
+        
+        .entries-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .entries-title {
+            color: #374151;
+            font-size: 1.5rem;
+        }
+        
+        .sync-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .entries-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .entry-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #4f46e5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .entry-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .entry-date {
+            color: #4f46e5;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .entry-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .entry-tag {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+        }
+        
+        .entry-content {
+            color: #4b5563;
+            line-height: 1.6;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        
+        .entry-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-edit {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #4f46e5;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                max-height: 50vh;
+            }
+            
+            .entries-panel {
+                max-height: 50vh;
+            }
+            
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .login-box {
+                padding: 30px 20px;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div class="login-box">
+                <h1>📔 AbrDiary</h1>
+                <p>Diary pribadi Anda. Data tersimpan lokal dan otomatis sync ke cloud saat online.</p>
+                
+                <div class="password-input">
+                    <input type="password" id="passwordInput" placeholder="Masukkan password" autocomplete="off">
+                    <button class="login-btn" id="loginBtn">
+                        <span>🔐</span> MASUK KE DIARY
+                    </button>
+                    <div class="error-msg" id="errorMsg">
+                        Password salah! Password: 12354
+                    </div>
+                </div>
+                
+                <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+                    <strong>Data aman:</strong> Tersimpan di browser Anda & backup ke cloud
+                </p>
+            </div>
+        </div>
+        
+        <!-- Main App -->
+        <div id="mainApp">
+            <!-- Header -->
+            <div class="app-header">
+                <div class="app-title">
+                    <span>📔</span>
+                    <span>AbrDiary</span>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <span id="statusIcon">🌐</span>
+                    <span id="statusText">Memeriksa...</span>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Left: Editor -->
+                <div class="editor-panel">
+                    <h2 class="editor-title">✍️ Tulis Entri Baru</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">📅 Tanggal</label>
+                        <input type="date" id="entryDate" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">🏷️ Tags/Kategori</label>
+                        <div class="tags-container" id="tagsContainer">
+                            <!-- Tags akan dimuat di sini -->
+                        </div>
+                        
+                        <div class="add-tag-form">
+                            <input type="text" id="newTagInput" class="add-tag-input" placeholder="Tag baru...">
+                            <button class="add-tag-btn" id="addTagBtn">+ Tambah</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">📝 Isi Diary</label>
+                        <textarea id="entryContent" class="form-control" placeholder="Tuliskan perasaan dan pengalaman Anda hari ini..."></textarea>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="saveBtn">
+                            <span>💾</span> SIMPAN ENTRY
+                        </button>
+                        <button class="btn btn-secondary" id="clearBtn">
+                            <span>🗑️</span> BERSIHKAN
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right: Entries -->
+                <div class="entries-panel">
+                    <div class="entries-header">
+                        <h2 class="entries-title">📚 Entri Sebelumnya</h2>
+                        <button class="sync-btn" id="syncBtn">
+                            <span>🔄</span> SYNC SEKARANG
+                        </button>
+                    </div>
+                    
+                    <div class="entries-list" id="entriesList">
+                        <!-- Entries akan dimuat di sini -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notificationIcon">ℹ️</span>
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        // ============================================
+        // KONFIGURASI
+        // ============================================
+        const PASSWORD = "12354";
+        const APP_NAME = "AbrDiary";
+        
+        // ============================================
+        // FIREBASE CONFIG
+        // ============================================
+        // GANTI dengan config dari Firebase Console Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyDA2R2N2IdT_vllswlJszznNoGyIhO-HaA",
+  authDomain: "abrdiary-e6a79.firebaseapp.com",
+  databaseURL: "https://abrdiary-e6a79-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "abrdiary-e6a79",
+  storageBucket: "abrdiary-e6a79.firebasestorage.app",
+  messagingSenderId: "636974189734",
+  appId: "1:636974189734:web:ce7f1d9ab5414eac0b3867"
+        };
+        
+        // ============================================
+        // STATE GLOBAL
+        // ============================================
+        let state = {
+            entries: [],
+            tags: [],
+            selectedTags: new Set(),
+            editingEntryId: null,
+            isOnline: navigator.onLine,
+            firebase: {
+                app: null,
+                db: null,
+                userId: null,
+                connected: false
+            }
+        };
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            initApp();
+        });
+        
+        function initApp() {
+            // Set tanggal hari ini
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Coba initialize Firebase
+            initFirebase();
+            
+            // Update status koneksi
+            updateConnectionStatus();
+            
+            // Setup online/offline detection
+            window.addEventListener('online', handleOnline);
+            window.addEventListener('offline', handleOffline);
+            
+            // Cek login sebelumnya
+            checkPreviousLogin();
+        }
+        
+        function initFirebase() {
+            try {
+                // Initialize Firebase
+                state.firebase.app = firebase.initializeApp(firebaseConfig);
+                state.firebase.db = firebase.database();
+                
+                console.log("Firebase initialized");
+                
+                // Anonymous login
+                firebase.auth().signInAnonymously()
+                    .then((userCredential) => {
+                        state.firebase.userId = userCredential.user.uid;
+                        state.firebase.connected = true;
+                        console.log("Firebase connected, User ID:", state.firebase.userId);
+                        
+                        // Cek koneksi database
+                        const connectedRef = state.firebase.db.ref('.info/connected');
+                        connectedRef.on('value', (snap) => {
+                            state.firebase.connected = snap.val() === true;
+                            updateConnectionStatus();
+                            
+                            if (state.firebase.connected && state.isOnline) {
+                                // Sync data saat online
+                                setTimeout(syncData, 1000);
+                            }
+                        });
+                    })
+                    .catch((error) => {
+                        console.log("Firebase auth error:", error);
+                        state.firebase.connected = false;
+                    });
+                    
+            } catch (error) {
+                console.log("Firebase init failed:", error);
+                state.firebase.connected = false;
+            }
+        }
+        
+        function checkPreviousLogin() {
+            const savedLogin = localStorage.getItem(`${APP_NAME}_logged_in`);
+            if (savedLogin === 'true') {
+                // Auto login
+                handleLoginSuccess();
+            }
+        }
+        
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+        function setupEventListeners() {
+            // Login
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            
+            // Tags
+            document.getElementById('addTagBtn').addEventListener('click', addTag);
+            document.getElementById('newTagInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTag();
+            });
+            
+            // Entries
+            document.getElementById('saveBtn').addEventListener('click', saveEntry);
+            document.getElementById('clearBtn').addEventListener('click', clearForm);
+            document.getElementById('syncBtn').addEventListener('click', forceSync);
+        }
+        
+        function handleLogin() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            if (password === PASSWORD) {
+                handleLoginSuccess();
+            } else {
+                errorMsg.style.display = 'block';
+                setTimeout(() => {
+                    errorMsg.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function handleLoginSuccess() {
+            // Save login state
+            localStorage.setItem(`${APP_NAME}_logged_in`, 'true');
+            
+            // Show main app
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            
+            // Load data
+            loadLocalData();
+            loadTags();
+            displayTags();
+            displayEntries();
+        }
+        
+        function handleOnline() {
+            state.isOnline = true;
+            updateConnectionStatus();
+            
+            if (state.firebase.connected) {
+                // Auto sync saat online kembali
+                setTimeout(syncData, 2000);
+            }
+        }
+        
+        function handleOffline() {
+            state.isOnline = false;
+            updateConnectionStatus();
+        }
+        
+        function updateConnectionStatus() {
+            const statusBadge = document.getElementById('statusBadge');
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            
+            if (state.isOnline && state.firebase.connected) {
+                statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+                statusIcon.textContent = '🌐';
+                statusText.textContent = 'Online - Cloud tersambung';
+            } else if (state.isOnline && !state.firebase.connected) {
+                statusBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+                statusIcon.textContent = '⚠️';
+                statusText.textContent = 'Online - Cloud error';
+            } else {
+                statusBadge.style.background = 'rgba(156, 163, 175, 0.2)';
+                statusIcon.textContent = '📴';
+                statusText.textContent = 'Offline - Mode lokal';
+            }
+        }
+        
+        // ============================================
+        // DATA MANAGEMENT
+        // ============================================
+        function loadLocalData() {
+            // Load entries
+            const savedEntries = localStorage.getItem(`${APP_NAME}_entries`);
+            state.entries = savedEntries ? JSON.parse(savedEntries) : [];
+            
+            // Load tags
+            const savedTags = localStorage.getItem(`${APP_NAME}_tags`);
+            state.tags = savedTags ? JSON.parse(savedTags) : ['Pribadi', 'Kerja', 'Hobi', 'Keluaraga'];
+        }
+        
+        function saveLocalData() {
+            localStorage.setItem(`${APP_NAME}_entries`, JSON.stringify(state.entries));
+            localStorage.setItem(`${APP_NAME}_tags`, JSON.stringify(state.tags));
+        }
+        
+        async function saveToFirebase(entry) {
+            if (!state.firebase.db || !state.firebase.userId || !state.firebase.connected) {
+                return false;
+            }
+            
+            try {
+                // Save to Realtime Database
+                await state.firebase.db.ref(`users/${state.firebase.userId}/entries/${entry.id}`).set(entry);
+                return true;
+            } catch (error) {
+                console.error("Firebase save error:", error);
+                return false;
+            }
+        }
+        
+        async function syncData() {
+            if (!state.isOnline || !state.firebase.connected) {
+                showNotification("Tidak bisa sync: offline atau Firebase error", "error");
+                return;
+            }
+            
+            try {
+                showNotification("Menyinkronkan data ke cloud...", "info");
+                
+                // Upload semua entri lokal ke Firebase
+                for (const entry of state.entries) {
+                    await saveToFirebase(entry);
+                }
+                
+                // Download dari Firebase (untuk backup recovery)
+                const snapshot = await state.firebase.db.ref(`users/${state.firebase.userId}/entries`).once('value');
+                const firebaseEntries = snapshot.val();
+                
+                if (firebaseEntries) {
+                    // Merge dengan data lokal
+                    const localIds = new Set(state.entries.map(e => e.id));
+                    const firebaseData = Object.values(firebaseEntries);
+                    
+                    for (const fbEntry of firebaseData) {
+                        if (!localIds.has(fbEntry.id)) {
+                            state.entries.push(fbEntry);
+                        }
+                    }
+                    
+                    saveLocalData();
+                    displayEntries();
+                }
+                
+                showNotification("Data berhasil disinkronkan!", "success");
+                
+            } catch (error) {
+                console.error("Sync error:", error);
+                showNotification("Gagal sinkron: " + error.message, "error");
+            }
+        }
+        
+        function forceSync() {
+            if (!state.isOnline) {
+                showNotification("Anda sedang offline", "error");
+                return;
+            }
+            
+            if (!state.firebase.connected) {
+                showNotification("Firebase tidak terhubung", "error");
+                return;
+            }
+            
+            const syncBtn = document.getElementById('syncBtn');
+            syncBtn.innerHTML = '<span>🔄</span> SYNCING...';
+            syncBtn.disabled = true;
+            
+            syncData().finally(() => {
+                setTimeout(() => {
+                    syncBtn.innerHTML = '<span>🔄</span> SYNC SEKARANG';
+                    syncBtn.disabled = false;
+                }, 2000);
+            });
+        }
+        
+        // ============================================
+        // TAGS MANAGEMENT
+        // ============================================
+        function loadTags() {
+            // Tags sudah diload di loadLocalData()
+        }
+        
+        function displayTags() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = '';
+            
+            state.tags.forEach(tag => {
+                const tagEl = document.createElement('div');
+                tagEl.className = `tag ${state.selectedTags.has(tag) ? 'active' : ''}`;
+                tagEl.innerHTML = `
+                    ${tag}
+                    <span class="tag-remove" onclick="removeTag('${tag}')">×</span>
+                `;
+                tagEl.onclick = () => toggleTag(tag);
+                container.appendChild(tagEl);
+            });
+        }
+        
+        function toggleTag(tag) {
+            if (state.selectedTags.has(tag)) {
+                state.selectedTags.delete(tag);
+            } else {
+                state.selectedTags.add(tag);
+            }
+            displayTags();
+        }
+        
+        function addTag() {
+            const input = document.getElementById('newTagInput');
+            const newTag = input.value.trim();
+            
+            if (!newTag) {
+                showNotification("Masukkan nama tag", "error");
+                return;
+            }
+            
+            if (state.tags.includes(newTag)) {
+                showNotification("Tag sudah ada", "error");
+                return;
+            }
+            
+            state.tags.push(newTag);
+            saveLocalData();
+            displayTags();
+            input.value = '';
+            showNotification(`Tag "${newTag}" ditambahkan`, "success");
+        }
+        
+        function removeTag(tag) {
+            if (tag === 'Pribadi') {
+                showNotification("Tag 'Pribadi' tidak bisa dihapus", "error");
+                return;
+            }
+            
+            if (!confirm(`Hapus tag "${tag}"?`)) return;
+            
+            // Hapus dari array tags
+            state.tags = state.tags.filter(t => t !== tag);
+            
+            // Hapus dari selected tags
+            state.selectedTags.delete(tag);
+            
+            saveLocalData();
+            displayTags();
+            showNotification(`Tag "${tag}" dihapus`, "success");
+        }
+        
+        // ============================================
+        // ENTRIES MANAGEMENT
+        // ============================================
+        function saveEntry() {
+            const date = document.getElementById('entryDate').value;
+            const content = document.getElementById('entryContent').value.trim();
+            
+            if (!date) {
+                showNotification("Pilih tanggal terlebih dahulu", "error");
+                return;
+            }
+            
+            if (!content) {
+                showNotification("Tulis isi diary terlebih dahulu", "error");
+                return;
+            }
+            
+            const entry = {
+                id: state.editingEntryId || `entry_${Date.now()}`,
+                date: date,
+                tags: Array.from(state.selectedTags),
+                content: content,
+                created: new Date().toISOString(),
+                updated: new Date().toISOString()
+            };
+            
+            if (state.editingEntryId) {
+                // Update existing entry
+                const index = state.entries.findIndex(e => e.id === state.editingEntryId);
+                if (index !== -1) {
+                    state.entries[index] = entry;
+                }
+                state.editingEntryId = null;
+                document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN ENTRY';
+            } else {
+                // Add new entry
+                state.entries.push(entry);
+            }
+            
+            // Save to localStorage
+            saveLocalData();
+            
+            // Try to save to Firebase
+            if (state.isOnline && state.firebase.connected) {
+                saveToFirebase(entry).then(success => {
+                    if (success) {
+                        showNotification("Entry tersimpan di cloud", "success");
+                    } else {
+                        showNotification("Entry disimpan lokal, akan sync nanti", "info");
+                    }
+                });
+            } else {
+                showNotification("Entry disimpan lokal", "info");
+            }
+            
+            // Update UI
+            displayEntries();
+            clearForm();
+        }
+        
+        function editEntry(entryId) {
+            const entry = state.entries.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            document.getElementById('entryDate').value = entry.date;
+            document.getElementById('entryContent').value = entry.content;
+            
+            state.selectedTags = new Set(entry.tags || []);
+            displayTags();
+            
+            state.editingEntryId = entryId;
+            document.getElementById('saveBtn').innerHTML = '<span>✏️</span> UPDATE ENTRY';
+            
+            // Scroll to editor
+            document.querySelector('.editor-panel').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function deleteEntry(entryId) {
+            if (!confirm("Hapus entry ini?")) return;
+            
+            // Remove from local
+            state.entries = state.entries.filter(e => e.id !== entryId);
+            saveLocalData();
+            
+            // Try to delete from Firebase
+            if (state.isOnline && state.firebase.connected && state.firebase.userId) {
+                try {
+                    await state.firebase.db.ref(`users/${state.firebase.userId}/entries/${entryId}`).remove();
+                } catch (error) {
+                    console.error("Firebase delete error:", error);
+                }
+            }
+            
+            displayEntries();
+            showNotification("Entry dihapus", "success");
+        }
+        
+        function displayEntries() {
+            const container = document.getElementById('entriesList');
+            
+            if (state.entries.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>📝</div>
+                        <h3>Belum ada entry</h3>
+                        <p>Mulailah menulis diary pertama Anda!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date (newest first)
+            const sortedEntries = [...state.entries].sort((a, b) => 
+                new Date(b.date) - new Date(a.date)
+            );
+            
+            container.innerHTML = sortedEntries.map(entry => `
+                <div class="entry-card">
+                    <div class="entry-header">
+                        <div class="entry-date">${formatDate(entry.date)}</div>
+                    </div>
+                    
+                    ${entry.tags && entry.tags.length > 0 ? `
+                        <div class="entry-tags">
+                            ${entry.tags.map(tag => `
+                                <span class="entry-tag">${tag}</span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="entry-content">${entry.content}</div>
+                    
+                    <div class="entry-actions">
+                        <button class="btn-sm btn-edit" onclick="editEntry('${entry.id}')">
+                            <span>✏️</span> Edit
+                        </button>
+                        <button class="btn-sm btn-delete" onclick="deleteEntry('${entry.id}')">
+                            <span>🗑️</span> Hapus
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function clearForm() {
+            // Reset date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('entryDate').value = today;
+            
+            // Clear content
+            document.getElementById('entryContent').value = '';
+            
+            // Clear selected tags
+            state.selectedTags.clear();
+            displayTags();
+            
+            // Reset editing mode
+            state.editingEntryId = null;
+            document.getElementById('saveBtn').innerHTML = '<span>💾</span> SIMPAN ENTRY';
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        function showNotification(message, type = "info") {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            const text = document.getElementById('notificationText');
+            
+            // Set style based on type
+            const styles = {
+                info: { bg: '#3b82f6', icon: 'ℹ️' },
+                success: { bg: '#10b981', icon: '✅' },
+                error: { bg: '#ef4444', icon: '❌' },
+                warning: { bg: '#f59e0b', icon: '⚠️' }
+            };
+            
+            const style = styles[type] || styles.info;
+            
+            notification.style.background = style.bg;
+            icon.textContent = style.icon;
+            text.textContent = message;
+            
+            notification.style.display = 'flex';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ============================================
+        // GLOBAL FUNCTIONS (untuk event handlers)
+        // ============================================
+        window.toggleTag = toggleTag;
+        window.removeTag = removeTag;
+        window.editEntry = editEntry;
+        window.deleteEntry = deleteEntry;
+    </script>
+</body>
+</html>
