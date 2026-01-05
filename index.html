@@ -2,143 +2,120 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>ABRdiary v.1 Online</title>
+<title>ABRdiary v.2.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
-    --bg-main:#f4f6f8;
-    --bg-card:#ffffff;
-    --primary:#2563eb;
-    --secondary:#64748b;
-    --border:#e5e7eb;
+  --bg:#f4f6f8;
+  --card:#fff;
+  --primary:#2563eb;
+  --border:#e5e7eb;
 }
-*{ box-sizing:border-box; }
+*{box-sizing:border-box}
 body{
-    margin:0;
-    padding:24px;
-    font-family:"Segoe UI", Arial, sans-serif;
-    background:var(--bg-main);
-    color:#1f2937;
+  margin:0;padding:16px;
+  font-family:Segoe UI,Arial;
+  background:var(--bg);
 }
-.container{ max-width:920px; margin:auto; }
+.container{max-width:900px;margin:auto}
 .card{
-    background:var(--bg-card);
-    border-radius:14px;
-    padding:22px;
-    box-shadow:0 8px 20px rgba(0,0,0,.05);
-    margin-bottom:20px;
+  background:var(--card);
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 8px 20px rgba(0,0,0,.05);
+  margin-bottom:20px;
 }
-h1{text-align:center;margin-bottom:6px;}
-.subtitle{text-align:center;color:var(--secondary);margin-bottom:20px;}
-label{ font-size:13px; font-weight:600; }
+h1{text-align:center;margin-bottom:6px}
+.subtitle{text-align:center;color:#64748b;margin-bottom:16px}
 
-input, textarea, select{
-    width:100%;
-    padding:10px 12px;
-    margin-top:6px;
-    margin-bottom:14px;
-    border-radius:8px;
-    border:1px solid var(--border);
-}
-textarea{ height:120px; }
-
-.btn-primary{
-    background:var(--primary);
-    color:white;
-    border:none;
-    padding:8px 14px;
-    border-radius:999px;
-    cursor:pointer;
-}
-
-/* DATE TIME INLINE & PLAIN */
 .datetime-row{
-    display:flex;
-    gap:16px;
-    margin-bottom:14px;
+  display:flex;gap:20px;margin-bottom:14px
 }
 .datetime-row input{
-    border:none;
-    background:transparent;
-    padding:0;
-    margin:0;
-    font-size:14px;
-    font-weight:600;
-    color:#1f2937;
-    cursor:pointer;
+  border:none;
+  background:transparent;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
 }
-.datetime-row input:focus{
-    outline:none;
+.datetime-row input:focus{outline:none}
+
+textarea{
+  width:100%;height:120px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+}
+
+.btn{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  padding:8px 16px;
+  border-radius:999px;
+  cursor:pointer;
 }
 
 .tag-btn{
-    background:#e5f0ff;
-    color:#1d4ed8;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:12px;
-    margin:4px;
-    display:inline-block;
-    cursor:pointer;
+  display:inline-block;
+  background:#e5f0ff;
+  color:#1d4ed8;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  margin:4px;
+  cursor:pointer;
 }
-.tag-selected{ background:#1d4ed8;color:white; }
+.tag-selected{background:#1d4ed8;color:#fff}
 
-.filter-bar{
-    display:flex;
-    gap:10px;
-    margin-bottom:12px;
-}
 #diaryList{
-    max-height:320px;
-    overflow-y:auto;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:12px;
+  max-height:320px;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px;
 }
 .entry{
-    position:relative;
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:12px;
-    margin-bottom:10px;
-    background:#fafafa;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
+  background:#fafafa;
+  cursor:pointer;
 }
-.entry-date{
-    font-size:12px;
-    font-weight:600;
-    color:#475569;
-}
-.entry-preview{
-    font-size:13px;
-    margin-top:6px;
-}
-.delete-x{
-    position:absolute;
-    top:8px;
-    right:10px;
-    font-size:16px;
-    cursor:pointer;
-    color:#94a3b8;
-}
-.delete-x:hover{ color:#ef4444; }
+.entry:hover{background:#f1f5f9}
+.entry-date{font-size:12px;font-weight:600;color:#475569}
+.entry-preview{font-size:13px;margin-top:6px}
 
-/* LOGIN */
-#loginScreen{
-    position:fixed;
-    inset:0;
-    background:var(--bg-main);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
+/* MODAL */
+#modal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
 }
-.login-box{ max-width:360px;width:100%; }
+.modal-box{
+  background:#fff;
+  max-width:500px;
+  width:90%;
+  border-radius:14px;
+  padding:20px;
+  position:relative;
+}
+.modal-close{
+  position:absolute;
+  top:10px;right:14px;
+  font-size:18px;
+  cursor:pointer;
+  color:#94a3b8;
+}
+.modal-close:hover{color:#ef4444}
 
-/* RESPONSIVE */
 @media(max-width:600px){
-    body{ padding:14px; }
-    .filter-bar{ flex-direction:column; }
+  .datetime-row{flex-direction:row}
 }
 </style>
 
@@ -148,15 +125,7 @@ textarea{ height:120px; }
 
 <body>
 
-<div id="loginScreen">
-  <div class="card login-box">
-    <h1>🔐 ABRdiary</h1>
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button class="btn-primary" style="width:100%" onclick="checkLogin()">Masuk</button>
-  </div>
-</div>
-
-<div class="container" id="app" style="display:none">
+<div class="container">
 
 <div class="card">
 <h1>📘 ABRdiary</h1>
@@ -167,92 +136,79 @@ textarea{ height:120px; }
   <input type="time" id="diaryTime">
 </div>
 
-<label>Tag (wajib, satu)</label>
+<label>Tag</label>
 <div id="tagList"></div>
-
-<label>Tag Terpilih</label>
 <div id="selectedTag"></div>
 
 <label>Isi Diary</label>
 <textarea id="diaryText"></textarea>
 
-<button class="btn-primary" onclick="saveDiary()">Simpan Diary</button>
+<button class="btn" onclick="saveDiary()">Simpan Diary</button>
 </div>
 
 <div class="card">
-<h2>📚 Daftar Diary</h2>
-<div class="filter-bar">
-  <input type="text" id="searchInput" placeholder="🔍 Cari..." onkeyup="loadDiary()">
-  <select id="filterTag" onchange="loadDiary()">
-    <option value="">Semua Tag</option>
-  </select>
-</div>
+<h3>📚 Daftar Diary</h3>
 <div id="diaryList"></div>
 </div>
 
 </div>
 
-<script>
-function checkLogin(){
-  if(passwordInput.value==="12354"){
-    loginScreen.style.display="none";
-    app.style.display="block";
-  } else alert("Password salah");
-}
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <span class="modal-close" onclick="closeModal()">×</span>
+    <div id="modalContent"></div>
+    <br>
+    <button class="btn" onclick="deleteCurrent()">Hapus Diary</button>
+  </div>
+</div>
 
-const firebaseConfig = {
+<script>
+/* FIREBASE */
+firebase.initializeApp({
   apiKey: "AIzaSyB8jqDndij0mLi4zMqukKWRiEt4r6rh-D0",
-  authDomain: "abrdiary-4c946.firebaseapp.com",
-  databaseURL: "https://abrdiary-4c946-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "abrdiary-4c946",
-  storageBucket: "abrdiary-4c946.firebasestorage.app",
-  messagingSenderId: "1016043740286",
-  appId: "1:1016043740286:web:08a3caeb2dcdf374038c2f"
-};
-firebase.initializeApp(firebaseConfig);
+  databaseURL: "https://abrdiary-4c946-default-rtdb.asia-southeast1.firebasedatabase.app"
+});
 const db=firebase.database();
 
+/* DATE TIME AUTO */
+let manualTime=false;
+function updateTime(){
+  if(!manualTime){
+    const now=new Date();
+    diaryTime.value=now.toTimeString().slice(0,5);
+  }
+}
+setInterval(updateTime,1000);
+diaryDate.valueAsDate=new Date();
+diaryTime.onchange=()=>manualTime=true;
+
+/* TAG */
 function loadTags(){
   tagList.innerHTML="";
-  filterTag.innerHTML='<option value="">Semua Tag</option>';
   db.ref("tags").once("value").then(s=>{
     const tags=s.val()||{};
     Object.keys(tags).forEach(t=>{
       let b=document.createElement("span");
       b.className="tag-btn";
       b.innerText=t;
-      b.onclick=()=>selectTag(t);
+      b.onclick=()=>selectedTag.innerHTML=`<span class="tag-btn tag-selected">${t}</span>`;
       tagList.appendChild(b);
-
-      let o=document.createElement("option");
-      o.value=t;o.innerText=t;
-      filterTag.appendChild(o);
     });
     let plus=document.createElement("span");
     plus.className="tag-btn";
     plus.innerText="+";
     plus.onclick=()=>{
       let t=prompt("Nama tag");
-      if(!t)return;
-      db.ref("tags/"+t).set(true).then(loadTags);
+      if(t)db.ref("tags/"+t).set(true).then(loadTags);
     };
     tagList.appendChild(plus);
   });
 }
 
-function selectTag(t){
-  selectedTag.innerHTML="";
-  let s=document.createElement("span");
-  s.className="tag-btn tag-selected";
-  s.innerText=t;
-  selectedTag.appendChild(s);
-}
-
+/* SAVE */
 function saveDiary(){
-  if(!diaryDate.value||!diaryTime.value||!diaryText.value||!selectedTag.innerText){
-    alert("Tanggal, jam, isi, dan tag wajib diisi");
-    return;
-  }
+  if(!selectedTag.innerText||!diaryText.value)return alert("Lengkapi data");
   db.ref("diaries").push({
     date:diaryDate.value,
     time:diaryTime.value,
@@ -260,41 +216,50 @@ function saveDiary(){
     tag:selectedTag.innerText
   }).then(()=>{
     diaryText.value="";
-    selectedTag.innerHTML="";
     loadDiary();
   });
 }
 
+/* LIST */
+let currentKey="";
 function loadDiary(){
   diaryList.innerHTML="";
-  let q=searchInput.value.toLowerCase();
-  let f=filterTag.value;
   db.ref("diaries").once("value").then(s=>{
     const d=s.val()||{};
     let arr=Object.keys(d).map(k=>({key:k,...d[k]}));
     arr.sort((a,b)=>(b.date+" "+b.time).localeCompare(a.date+" "+a.time));
     arr.forEach(x=>{
-      if(q && !(x.text+x.tag).toLowerCase().includes(q))return;
-      if(f && x.tag!==f)return;
-      let p=x.text.length>70?x.text.slice(0,70)+"…":x.text;
-      diaryList.innerHTML+=`
-        <div class="entry">
-          <span class="delete-x" onclick="deleteDiary('${x.key}')">×</span>
-          <div class="entry-date">${x.date} ${x.time} • ${x.tag}</div>
-          <div class="entry-preview">${p}</div>
-        </div>`;
+      let div=document.createElement("div");
+      div.className="entry";
+      div.innerHTML=`
+        <div class="entry-date">${x.date} ${x.time} • ${x.tag}</div>
+        <div class="entry-preview">${x.text.slice(0,60)}…</div>`;
+      div.onclick=()=>openModal(x);
+      diaryList.appendChild(div);
     });
   });
 }
 
-function deleteDiary(k){
-  if(confirm("Yakin ingin menghapus diary ini?")){
-    db.ref("diaries/"+k).remove().then(loadDiary);
+/* MODAL */
+function openModal(x){
+  currentKey=x.key;
+  modalContent.innerHTML=`
+    <b>${x.date} ${x.time}</b><br>
+    <i>${x.tag}</i><hr>
+    ${x.text.replace(/\n/g,"<br>")}
+  `;
+  modal.style.display="flex";
+}
+function closeModal(){modal.style.display="none"}
+function deleteCurrent(){
+  if(confirm("Yakin hapus diary ini?")){
+    db.ref("diaries/"+currentKey).remove().then(()=>{
+      closeModal();
+      loadDiary();
+    });
   }
 }
 
-diaryDate.valueAsDate=new Date();
-diaryTime.value=new Date().toTimeString().slice(0,5);
 loadTags();
 loadDiary();
 </script>
