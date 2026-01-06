@@ -86,6 +86,17 @@ h1{text-align:center;margin-bottom:6px}
 }
 .tag-selected{background:#1d4ed8;color:white}
 
+/* TEXTAREA (DIPERBESAR) */
+#diaryText{
+  width:100%;
+  min-height:220px;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  font-size:14px;
+  resize:vertical;
+}
+
 /* SEARCH */
 .search-label{
   font-size:13px;
@@ -93,13 +104,19 @@ h1{text-align:center;margin-bottom:6px}
   margin-bottom:6px;
   display:block;
 }
-.search-box input{
-  width:100%;
+.search-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+.search-row input,
+.search-row select{
   padding:10px 12px;
   border-radius:10px;
   border:1px solid var(--border);
-  margin-bottom:12px;
+  font-size:14px;
 }
+.search-row input{flex:1}
 
 /* LIST */
 #diaryList{
@@ -192,10 +209,12 @@ h1{text-align:center;margin-bottom:6px}
 <div class="card">
   <h3>📚 Daftar Diary</h3>
 
-  <!-- 🔍 SEARCH (PASTI MUNCUL) -->
   <label class="search-label">Cari Diary</label>
-  <div class="search-box">
+  <div class="search-row">
     <input type="text" id="searchInput" placeholder="Ketik kata kunci..." onkeyup="loadDiary()">
+    <select id="filterTag" onchange="loadDiary()">
+      <option value="">Semua Tag</option>
+    </select>
   </div>
 
   <div id="diaryList"></div>
@@ -240,13 +259,19 @@ diaryTime.onchange=()=>manualTime=true;
 /* TAG */
 function loadTags(){
   db.ref("tags").once("value").then(s=>{
+    const tags=s.val()||{};
     tagList.innerHTML="";
-    Object.keys(s.val()||{}).forEach(t=>{
+    filterTag.innerHTML='<option value="">Semua Tag</option>';
+    Object.keys(tags).forEach(t=>{
       let b=document.createElement("span");
       b.className="tag-btn";
       b.innerText=t;
       b.onclick=()=>selectedTag.innerHTML=`<span class="tag-btn tag-selected">${t}</span>`;
       tagList.appendChild(b);
+
+      let o=document.createElement("option");
+      o.value=t;o.innerText=t;
+      filterTag.appendChild(o);
     });
   });
 }
@@ -260,19 +285,24 @@ function saveDiary(){
     time:diaryTime.value,
     tag:selectedTag.innerText,
     text:diaryText.value
-  }).then(()=>{diaryText.value="";loadDiary()});
+  }).then(()=>{
+    diaryText.value="";
+    loadDiary();
+  });
 }
 
-/* LIST + SEARCH */
+/* LIST + SEARCH + TAG FILTER */
 let currentKey="";
 function loadDiary(){
   diaryList.innerHTML="";
   const q=(searchInput.value||"").toLowerCase();
+  const ft=filterTag.value;
   db.ref("diaries").once("value").then(s=>{
     let arr=Object.entries(s.val()||{}).map(([k,v])=>({key:k,...v}));
     arr.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
     arr.forEach(x=>{
       if(q && !(x.text+x.tag).toLowerCase().includes(q)) return;
+      if(ft && x.tag!==ft) return;
       let d=document.createElement("div");
       d.className="entry";
       d.innerHTML=`
