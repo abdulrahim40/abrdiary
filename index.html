@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>ABRdiary v.2.2</title>
+<title>ABRdiary v.2.3</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -30,6 +30,22 @@ body{
 h1{text-align:center;margin-bottom:6px}
 .subtitle{text-align:center;color:#64748b;margin-bottom:16px}
 
+/* LOGIN */
+#loginScreen{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+}
+.login-box{
+  max-width:360px;
+  width:100%;
+}
+
+/* DATE TIME */
 .datetime-row{
   display:flex;
   gap:20px;
@@ -50,7 +66,6 @@ textarea{
   border:1px solid var(--border);
   border-radius:10px;
   padding:10px;
-  font-size:14px;
 }
 
 .btn{
@@ -62,6 +77,7 @@ textarea{
   cursor:pointer;
 }
 
+/* TAG */
 .tag-btn{
   display:inline-block;
   background:#e5f0ff;
@@ -72,11 +88,9 @@ textarea{
   margin:4px;
   cursor:pointer;
 }
-.tag-selected{
-  background:#1d4ed8;
-  color:white;
-}
+.tag-selected{background:#1d4ed8;color:white}
 
+/* LIST */
 #diaryList{
   max-height:320px;
   overflow-y:auto;
@@ -111,7 +125,7 @@ textarea{
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:1000;
+  z-index:3000;
 }
 .modal-box{
   background:white;
@@ -142,7 +156,16 @@ textarea{
 
 <body>
 
-<div class="container">
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="card login-box">
+    <h1>🔐 ABRdiary</h1>
+    <input type="password" id="passwordInput" placeholder="Password">
+    <button class="btn" style="width:100%" onclick="checkLogin()">Masuk</button>
+  </div>
+</div>
+
+<div class="container" id="app" style="display:none">
 
 <div class="card">
   <h1>📘 ABRdiary</h1>
@@ -170,7 +193,7 @@ textarea{
 
 </div>
 
-<!-- MODAL BACA -->
+<!-- MODAL -->
 <div id="modal">
   <div class="modal-box">
     <span class="modal-close" onclick="closeModal()">×</span>
@@ -181,30 +204,33 @@ textarea{
 </div>
 
 <script>
+/* LOGIN */
+function checkLogin(){
+  if(passwordInput.value==="12354"){
+    loginScreen.style.display="none";
+    app.style.display="block";
+  }else{
+    alert("Password salah");
+  }
+}
+
 /* FIREBASE */
 firebase.initializeApp({
   apiKey: "AIzaSyB8jqDndij0mLi4zMqukKWRiEt4r6rh-D0",
   databaseURL: "https://abrdiary-4c946-default-rtdb.asia-southeast1.firebasedatabase.app"
 });
-const db = firebase.database();
+const db=firebase.database();
 
 /* AUTO DATE & TIME */
-let manualDate = false;
-let manualTime = false;
-
+let manualDate=false, manualTime=false;
 function updateDateTime(){
-  const now = new Date();
-
-  if(!manualDate){
-    diaryDate.value = now.toISOString().slice(0,10);
-  }
-  if(!manualTime){
-    diaryTime.value = now.toTimeString().slice(0,5);
-  }
+  const now=new Date();
+  if(!manualDate) diaryDate.value=now.toISOString().slice(0,10);
+  if(!manualTime) diaryTime.value=now.toTimeString().slice(0,5);
 }
 setInterval(updateDateTime,1000);
-diaryDate.onchange = () => manualDate = true;
-diaryTime.onchange = () => manualTime = true;
+diaryDate.onchange=()=>manualDate=true;
+diaryTime.onchange=()=>manualTime=true;
 updateDateTime();
 
 /* TAG */
@@ -222,7 +248,6 @@ function loadTags(){
       };
       tagList.appendChild(b);
     });
-
     let plus=document.createElement("span");
     plus.className="tag-btn";
     plus.innerText="+";
@@ -236,15 +261,15 @@ function loadTags(){
 
 /* SAVE */
 function saveDiary(){
-  if(!selectedTag.innerText || !diaryText.value){
+  if(!selectedTag.innerText||!diaryText.value){
     alert("Tag dan isi diary wajib diisi");
     return;
   }
   db.ref("diaries").push({
-    date: diaryDate.value,
-    time: diaryTime.value,
-    tag: selectedTag.innerText,
-    text: diaryText.value
+    date:diaryDate.value,
+    time:diaryTime.value,
+    tag:selectedTag.innerText,
+    text:diaryText.value
   }).then(()=>{
     diaryText.value="";
     loadDiary();
@@ -258,12 +283,9 @@ function loadDiary(){
   db.ref("diaries").once("value").then(s=>{
     const d=s.val()||{};
     let arr=Object.keys(d).map(k=>({key:k,...d[k]}));
-
-    // TERBARU PALING ATAS
     arr.sort((a,b)=>
       (b.date+" "+b.time).localeCompare(a.date+" "+a.time)
     );
-
     arr.forEach(x=>{
       let div=document.createElement("div");
       div.className="entry";
@@ -272,7 +294,7 @@ function loadDiary(){
           ${x.date} ${x.time} • ${x.tag}
         </div>
         <div class="entry-preview">
-          ${x.text.length>60 ? x.text.slice(0,60)+"…" : x.text}
+          ${x.text.length>60?x.text.slice(0,60)+"…":x.text}
         </div>`;
       div.onclick=()=>openModal(x);
       diaryList.appendChild(div);
@@ -285,15 +307,12 @@ function openModal(x){
   currentKey=x.key;
   modalContent.innerHTML=`
     <b>${x.date} ${x.time}</b><br>
-    <i>${x.tag}</i>
-    <hr>
+    <i>${x.tag}</i><hr>
     ${x.text.replace(/\n/g,"<br>")}
   `;
   modal.style.display="flex";
 }
-function closeModal(){
-  modal.style.display="none";
-}
+function closeModal(){modal.style.display="none"}
 function deleteCurrent(){
   if(confirm("Yakin ingin menghapus diary ini?")){
     db.ref("diaries/"+currentKey).remove().then(()=>{
