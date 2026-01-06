@@ -22,7 +22,7 @@ body{
 .container{max-width:900px;margin:auto}
 .card{
   background:var(--card);
-  padding:20px;
+  padding:22px;
   border-radius:14px;
   box-shadow:0 8px 20px rgba(0,0,0,.05);
   margin-bottom:20px;
@@ -30,7 +30,7 @@ body{
 h1{text-align:center;margin-bottom:6px}
 .subtitle{text-align:center;color:#64748b;margin-bottom:16px}
 
-/* LOGIN */
+/* ========= LOGIN ========= */
 #loginScreen{
   position:fixed;
   inset:0;
@@ -41,7 +41,23 @@ h1{text-align:center;margin-bottom:6px}
   z-index:2000;
 }
 .login-box{
+  width:100%;
   max-width:360px;
+  text-align:center;
+}
+.login-box h1{
+  margin-bottom:14px;
+}
+.login-box input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  font-size:14px;
+  margin-bottom:14px;
+  text-align:center;
+}
+.login-box button{
   width:100%;
 }
 
@@ -72,9 +88,10 @@ textarea{
   background:var(--primary);
   color:white;
   border:none;
-  padding:8px 16px;
+  padding:10px 16px;
   border-radius:999px;
   cursor:pointer;
+  font-weight:600;
 }
 
 /* TAG */
@@ -159,17 +176,18 @@ textarea{
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="card login-box">
-    <h1>🔐 ABRdiary</h1>
-    <input type="password" id="passwordInput" placeholder="Password">
-    <button class="btn" style="width:100%" onclick="checkLogin()">Masuk</button>
+    <h1>🔐 Diary Online</h1>
+    <div class="subtitle">Abdul Rahim</div>
+    <input type="password" id="passwordInput" placeholder="Masukkan Password">
+    <button class="btn" onclick="checkLogin()">Masuk</button>
   </div>
 </div>
 
 <div class="container" id="app" style="display:none">
 
 <div class="card">
-  <h1>📘 ABRdiary</h1>
-  <div class="subtitle">Diary Online Abdul Rahim</div>
+  <h1>📘 Diary Online</h1>
+  <div class="subtitle">Abdul Rahim</div>
 
   <div class="datetime-row">
     <input type="date" id="diaryDate">
@@ -204,7 +222,6 @@ textarea{
 </div>
 
 <script>
-/* LOGIN */
 function checkLogin(){
   if(passwordInput.value==="12354"){
     loginScreen.style.display="none";
@@ -248,14 +265,6 @@ function loadTags(){
       };
       tagList.appendChild(b);
     });
-    let plus=document.createElement("span");
-    plus.className="tag-btn";
-    plus.innerText="+";
-    plus.onclick=()=>{
-      let t=prompt("Nama tag");
-      if(t) db.ref("tags/"+t).set(true).then(loadTags);
-    };
-    tagList.appendChild(plus);
   });
 }
 
