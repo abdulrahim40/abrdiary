@@ -137,6 +137,23 @@ body {
   margin-right: 8px;
 }
 
+.btn-small {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background: var(--primary-light);
+  box-shadow: none;
+}
+
 /* Main App */
 #app {
   display: none;
@@ -213,17 +230,28 @@ body {
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-/* Tags */
-.tags-section {
-  margin-bottom: 24px;
+/* Tags Management */
+.tags-management {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
 .tags-label {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-light);
-  margin-bottom: 10px;
-  display: block;
+  margin-bottom: 0;
+}
+
+.tags-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tags-section {
+  margin-bottom: 24px;
 }
 
 .tags-container {
@@ -231,6 +259,43 @@ body {
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 16px;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 10px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.tag-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tag-selected {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.tag-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tag-item:hover .tag-actions {
+  opacity: 1;
 }
 
 .tag-btn {
@@ -540,6 +605,30 @@ body {
   box-shadow: 0 6px 18px rgba(107, 114, 128, 0.4);
 }
 
+/* Tag Modal */
+.tag-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tag-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  background: #f9fafb;
+  transition: all 0.3s;
+}
+
+.tag-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -579,6 +668,17 @@ body {
   .btn {
     width: 100%;
   }
+  
+  .tags-management {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .tags-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
@@ -596,6 +696,15 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+  
+  .tag-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .tag-actions {
+    opacity: 1;
   }
 }
 
@@ -665,7 +774,17 @@ body {
     </div>
     
     <div class="tags-section">
-      <label class="tags-label">Pilih Tag:</label>
+      <div class="tags-management">
+        <label class="tags-label">Pilih Tag:</label>
+        <div class="tags-actions">
+          <button class="btn btn-outline btn-small" onclick="openAddTagModal()">
+            <i class="fas fa-plus"></i> Tambah Tag
+          </button>
+          <button class="btn btn-outline btn-small" onclick="openManageTagsModal()">
+            <i class="fas fa-cog"></i> Kelola Tag
+          </button>
+        </div>
+      </div>
       <div class="tags-container" id="tagList"></div>
       
       <div class="selected-tag-container" id="selectedTagContainer" style="display: none;">
@@ -715,10 +834,10 @@ body {
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal View Diary -->
 <div id="modal">
   <div class="modal-card">
-    <span class="modal-close" onclick="modal.style.display='none'">&times;</span>
+    <span class="modal-close" onclick="closeModal()">&times;</span>
     
     <div class="modal-header">
       <div class="modal-date" id="modalDate"></div>
@@ -728,11 +847,57 @@ body {
     <div class="modal-content" id="modalContent"></div>
     
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="modal.style.display='none'">
+      <button class="btn btn-secondary" onclick="closeModal()">
         <i class="fas fa-times"></i> Tutup
       </button>
       <button class="btn btn-danger" onclick="deleteCurrent()">
         <i class="fas fa-trash"></i> Hapus Diary
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Add Tag -->
+<div id="tagModal" style="display: none;">
+  <div class="modal-card">
+    <span class="modal-close" onclick="closeTagModal()">&times;</span>
+    
+    <div class="modal-header">
+      <h3 style="margin: 0;" id="tagModalTitle">Tambah Tag Baru</h3>
+    </div>
+    
+    <div class="tag-input-group">
+      <input type="text" id="tagInput" class="tag-input" placeholder="Nama tag baru...">
+      <button class="btn" id="tagModalButton" onclick="saveTag()">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+    </div>
+    
+    <div id="tagModalMessage" style="color: #ef4444; font-size: 14px; margin-bottom: 15px;"></div>
+    
+    <div id="existingTags" style="display: none;">
+      <h4 style="margin-bottom: 10px;">Tag yang sudah ada:</h4>
+      <div id="tagListModal"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Manage Tags -->
+<div id="manageTagsModal" style="display: none;">
+  <div class="modal-card">
+    <span class="modal-close" onclick="closeManageTagsModal()">&times;</span>
+    
+    <div class="modal-header">
+      <h3 style="margin: 0;">Kelola Tag</h3>
+    </div>
+    
+    <div id="manageTagsList" style="margin-bottom: 20px;">
+      <p style="color: var(--text-light); margin-bottom: 15px;">Klik tag untuk mengedit. Hanya tag yang belum digunakan bisa dihapus.</p>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn" onclick="closeManageTagsModal()">
+        <i class="fas fa-times"></i> Selesai
       </button>
     </div>
   </div>
@@ -744,28 +909,21 @@ function checkLogin() {
   if (passwordInput.value === "12354") {
     loginScreen.style.display = "none";
     app.style.display = "block";
-    
-    // Add a subtle animation to the app
     app.style.animation = "fadeIn 0.5s ease-out";
-    
-    // Focus on the textarea for better UX
     setTimeout(() => {
       diaryText.focus();
     }, 300);
   } else {
-    // Shake animation for wrong password
     passwordInput.style.animation = "shake 0.5s";
     setTimeout(() => {
       passwordInput.style.animation = "";
     }, 500);
-    
     passwordInput.value = "";
     passwordInput.placeholder = "Password salah! Coba lagi...";
     passwordInput.focus();
   }
 }
 
-// Add enter key support for login
 passwordInput.addEventListener("keyup", function(event) {
   if (event.key === "Enter") {
     checkLogin();
@@ -781,13 +939,10 @@ const db = firebase.database();
 
 /* DATE & TIME AUTO */
 let manualDate = false, manualTime = false;
-
-// Set initial date/time
 const now = new Date();
 diaryDate.value = now.toISOString().slice(0, 10);
 diaryTime.value = now.toTimeString().slice(0, 5);
 
-// Update time every minute
 setInterval(() => {
   const n = new Date();
   if (!manualDate) diaryDate.value = n.toISOString().slice(0, 10);
@@ -797,76 +952,256 @@ setInterval(() => {
 diaryDate.onchange = () => manualDate = true;
 diaryTime.onchange = () => manualTime = true;
 
+// Variables for tag management
+let currentEditingTag = null;
+let tagsData = {};
+
 /* TAG MANAGEMENT */
 function loadTags() {
   db.ref("tags").once("value").then(snapshot => {
-    const tags = snapshot.val() || {};
+    tagsData = snapshot.val() || {};
     tagList.innerHTML = "";
     filterTag.innerHTML = '<option value="">Semua Tag</option>';
     
-    // If no tags exist, add a message
-    if (Object.keys(tags).length === 0) {
-      tagList.innerHTML = '<div style="color: #9ca3af; padding: 10px; text-align: center;">Belum ada tag tersedia</div>';
+    if (Object.keys(tagsData).length === 0) {
+      tagList.innerHTML = '<div style="color: #9ca3af; padding: 10px; text-align: center;">Belum ada tag. Tambahkan tag baru!</div>';
       return;
     }
     
-    Object.keys(tags).forEach(tag => {
-      // Create tag button
-      let tagBtn = document.createElement("div");
-      tagBtn.className = "tag-btn";
-      tagBtn.innerText = tag;
-      tagBtn.onclick = () => {
-        // Clear any previous selection
-        const allTags = document.querySelectorAll(".tag-btn");
-        allTags.forEach(t => t.classList.remove("tag-selected"));
-        
-        // Select this tag
-        tagBtn.classList.add("tag-selected");
-        
-        // Show selected tag container
-        selectedTagContainer.style.display = "block";
-        selectedTag.innerHTML = `<span class="tag-btn tag-selected">${tag}</span>`;
+    Object.keys(tagsData).forEach(tagKey => {
+      const tagName = tagsData[tagKey];
+      
+      // Create tag button for selection
+      let tagItem = document.createElement("div");
+      tagItem.className = "tag-item";
+      tagItem.innerHTML = `
+        <span class="tag-text">${tagName}</span>
+        <div class="tag-actions">
+          <i class="fas fa-edit" style="color: #4f46e5; cursor: pointer;" onclick="editTag('${tagKey}', '${tagName}', event)"></i>
+        </div>
+      `;
+      
+      tagItem.onclick = (e) => {
+        if (!e.target.closest('.tag-actions')) {
+          // Clear any previous selection
+          const allTags = document.querySelectorAll(".tag-item");
+          allTags.forEach(t => t.classList.remove("tag-selected"));
+          
+          // Select this tag
+          tagItem.classList.add("tag-selected");
+          
+          // Show selected tag container
+          selectedTagContainer.style.display = "block";
+          selectedTag.innerHTML = `<span class="tag-item tag-selected">${tagName}</span>`;
+        }
       };
-      tagList.appendChild(tagBtn);
+      tagList.appendChild(tagItem);
 
       // Add tag to filter dropdown
       let option = document.createElement("option");
-      option.value = tag;
-      option.innerText = tag;
+      option.value = tagName;
+      option.innerText = tagName;
       filterTag.appendChild(option);
     });
   });
 }
 
-/* SAVE DIARY */
-function saveDiary() {
-  // Check if a tag is selected
-  const selectedTagEl = document.querySelector(".tag-selected");
-  if (!selectedTagEl) {
-    alert("Silakan pilih tag terlebih dahulu");
-    tagList.scrollIntoView({ behavior: "smooth", block: "center" });
+/* OPEN MODALS */
+function openAddTagModal() {
+  currentEditingTag = null;
+  tagModalTitle.textContent = "Tambah Tag Baru";
+  tagModalButton.innerHTML = '<i class="fas fa-save"></i> Simpan';
+  tagInput.value = "";
+  tagModalMessage.textContent = "";
+  existingTags.style.display = "none";
+  tagModal.style.display = "flex";
+  tagInput.focus();
+}
+
+function openManageTagsModal() {
+  loadTagsForManagement();
+  manageTagsModal.style.display = "flex";
+}
+
+function loadTagsForManagement() {
+  db.ref("tags").once("value").then(snapshot => {
+    tagsData = snapshot.val() || {};
+    manageTagsList.innerHTML = '<p style="color: var(--text-light); margin-bottom: 15px;">Klik tag untuk mengedit. Hanya tag yang belum digunakan bisa dihapus.</p>';
+    
+    if (Object.keys(tagsData).length === 0) {
+      manageTagsList.innerHTML += '<div style="color: #9ca3af; padding: 20px; text-align: center;">Belum ada tag yang dibuat.</div>';
+      return;
+    }
+    
+    Object.keys(tagsData).forEach(tagKey => {
+      const tagName = tagsData[tagKey];
+      const tagDiv = document.createElement("div");
+      tagDiv.className = "tag-item";
+      tagDiv.style.marginBottom = "10px";
+      tagDiv.innerHTML = `
+        <span class="tag-text">${tagName}</span>
+        <div class="tag-actions">
+          <i class="fas fa-edit" style="color: #4f46e5; cursor: pointer;" onclick="editTagInManage('${tagKey}', '${tagName}')"></i>
+          <i class="fas fa-trash" style="color: #ef4444; cursor: pointer;" onclick="deleteTag('${tagKey}', '${tagName}')"></i>
+        </div>
+      `;
+      manageTagsList.appendChild(tagDiv);
+    });
+  });
+}
+
+function editTag(tagKey, tagName, event) {
+  event.stopPropagation();
+  currentEditingTag = { key: tagKey, name: tagName };
+  tagModalTitle.textContent = "Edit Tag";
+  tagModalButton.innerHTML = '<i class="fas fa-save"></i> Update';
+  tagInput.value = tagName;
+  tagModalMessage.textContent = "";
+  existingTags.style.display = "none";
+  tagModal.style.display = "flex";
+  tagInput.focus();
+}
+
+function editTagInManage(tagKey, tagName) {
+  currentEditingTag = { key: tagKey, name: tagName };
+  tagModalTitle.textContent = "Edit Tag";
+  tagModalButton.innerHTML = '<i class="fas fa-save"></i> Update';
+  tagInput.value = tagName;
+  tagModalMessage.textContent = "";
+  existingTags.style.display = "none";
+  tagModal.style.display = "flex";
+  manageTagsModal.style.display = "none";
+  tagInput.focus();
+}
+
+/* SAVE TAG */
+function saveTag() {
+  const newTagName = tagInput.value.trim();
+  
+  if (!newTagName) {
+    tagModalMessage.textContent = "Nama tag tidak boleh kosong";
     return;
   }
   
-  // Check if diary text is empty
+  if (newTagName.length > 20) {
+    tagModalMessage.textContent = "Nama tag maksimal 20 karakter";
+    return;
+  }
+  
+  // Check if tag already exists (case insensitive)
+  const existingTagKey = Object.keys(tagsData).find(key => 
+    tagsData[key].toLowerCase() === newTagName.toLowerCase()
+  );
+  
+  if (existingTagKey && (!currentEditingTag || existingTagKey !== currentEditingTag.key)) {
+    tagModalMessage.textContent = "Tag dengan nama ini sudah ada";
+    return;
+  }
+  
+  if (currentEditingTag) {
+    // Update existing tag
+    const oldTagName = currentEditingTag.name;
+    
+    // Update tag in tags database
+    db.ref("tags/" + currentEditingTag.key).set(newTagName)
+      .then(() => {
+        // Update all diaries with the old tag
+        updateDiariesTag(oldTagName, newTagName);
+        
+        showNotification("Tag berhasil diperbarui");
+        closeTagModal();
+        loadTags();
+        loadDiary();
+      })
+      .catch(error => {
+        tagModalMessage.textContent = "Gagal memperbarui tag: " + error.message;
+      });
+  } else {
+    // Add new tag
+    const newTagKey = "tag_" + Date.now();
+    db.ref("tags/" + newTagKey).set(newTagName)
+      .then(() => {
+        showNotification("Tag berhasil ditambahkan");
+        closeTagModal();
+        loadTags();
+      })
+      .catch(error => {
+        tagModalMessage.textContent = "Gagal menambahkan tag: " + error.message;
+      });
+  }
+}
+
+/* UPDATE DIARIES WHEN TAG IS RENAMED */
+function updateDiariesTag(oldTagName, newTagName) {
+  db.ref("diaries").once("value").then(snapshot => {
+    const diaries = snapshot.val() || {};
+    const updates = {};
+    
+    Object.keys(diaries).forEach(key => {
+      if (diaries[key].tag === oldTagName) {
+        updates[`diaries/${key}/tag`] = newTagName;
+      }
+    });
+    
+    if (Object.keys(updates).length > 0) {
+      db.ref().update(updates)
+        .then(() => {
+          console.log(`${Object.keys(updates).length} diary diperbarui dengan tag baru`);
+        });
+    }
+  });
+}
+
+/* DELETE TAG */
+function deleteTag(tagKey, tagName) {
+  // Check if tag is used in any diary
+  db.ref("diaries").orderByChild("tag").equalTo(tagName).once("value")
+    .then(snapshot => {
+      const diariesWithTag = snapshot.val() || {};
+      
+      if (Object.keys(diariesWithTag).length > 0) {
+        alert(`Tag "${tagName}" tidak dapat dihapus karena digunakan di ${Object.keys(diariesWithTag).length} diary.`);
+        return;
+      }
+      
+      if (confirm(`Apakah Anda yakin ingin menghapus tag "${tagName}"?`)) {
+        db.ref("tags/" + tagKey).remove()
+          .then(() => {
+            showNotification("Tag berhasil dihapus");
+            loadTagsForManagement();
+            loadTags();
+          })
+          .catch(error => {
+            alert("Gagal menghapus tag: " + error.message);
+          });
+      }
+    });
+}
+
+/* SAVE DIARY */
+function saveDiary() {
+  const selectedTagEl = document.querySelector(".tag-selected");
+  if (!selectedTagEl) {
+    alert("Silakan pilih tag terlebih dahulu");
+    return;
+  }
+  
   if (!diaryText.value.trim()) {
     alert("Isi diary tidak boleh kosong");
     diaryText.focus();
     return;
   }
   
-  const tag = selectedTagEl.innerText;
+  const tag = selectedTagEl.querySelector('.tag-text').textContent;
   const date = diaryDate.value;
   const time = diaryTime.value;
   const text = diaryText.value.trim();
   
-  // Show saving animation
   const saveBtn = document.querySelector(".btn[onclick='saveDiary()']");
   const originalText = saveBtn.innerHTML;
   saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
   saveBtn.disabled = true;
   
-  // Save to Firebase
   db.ref("diaries").push({
     date: date,
     time: time,
@@ -874,31 +1209,20 @@ function saveDiary() {
     text: text,
     timestamp: new Date().getTime()
   }).then(() => {
-    // Reset form
     diaryText.value = "";
-    
-    // Reset tag selection
-    const allTags = document.querySelectorAll(".tag-btn");
+    const allTags = document.querySelectorAll(".tag-item");
     allTags.forEach(t => t.classList.remove("tag-selected"));
     selectedTagContainer.style.display = "none";
     
-    // Reset button
     saveBtn.innerHTML = originalText;
     saveBtn.disabled = false;
     
-    // Show success message
     showNotification("Diary berhasil disimpan!");
-    
-    // Reload diary list
     loadDiary();
-    
-    // Focus back to textarea
     diaryText.focus();
   }).catch(error => {
-    // Reset button
     saveBtn.innerHTML = originalText;
     saveBtn.disabled = false;
-    
     alert("Terjadi kesalahan saat menyimpan: " + error.message);
   });
 }
@@ -910,7 +1234,6 @@ function loadDiary() {
   const searchQuery = (searchInput.value || "").toLowerCase().trim();
   const filterTagValue = filterTag.value;
   
-  // Show loading state
   diaryList.innerHTML = `
     <div class="empty-state">
       <div class="empty-icon">
@@ -927,7 +1250,6 @@ function loadDiary() {
       ...value
     }));
     
-    // Sort by timestamp or date/time
     entries.sort((a, b) => {
       if (a.timestamp && b.timestamp) {
         return b.timestamp - a.timestamp;
@@ -935,22 +1257,16 @@ function loadDiary() {
       return (b.date + b.time).localeCompare(a.date + a.time);
     });
     
-    // Apply filters
     entries = entries.filter(entry => {
-      // Search filter
       if (searchQuery && !(entry.text + entry.tag).toLowerCase().includes(searchQuery)) {
         return false;
       }
-      
-      // Tag filter
       if (filterTagValue && entry.tag !== filterTagValue) {
         return false;
       }
-      
       return true;
     });
     
-    // Display entries
     if (entries.length === 0) {
       diaryList.innerHTML = `
         <div class="empty-state">
@@ -970,7 +1286,6 @@ function loadDiary() {
       const entryDiv = document.createElement("div");
       entryDiv.className = "diary-entry";
       
-      // Format date for display
       const formattedDate = formatDate(entry.date) + " " + entry.time;
       
       entryDiv.innerHTML = `
@@ -990,20 +1305,24 @@ function loadDiary() {
 /* OPEN DIARY MODAL */
 function openDiaryModal(entry) {
   currentKey = entry.key;
-  
-  // Format date for modal
   const formattedDate = formatDate(entry.date) + " • " + entry.time;
-  
-  // Set modal content
   modalDate.textContent = formattedDate;
   modalTag.textContent = entry.tag;
   modalContent.textContent = entry.text;
-  
-  // Show modal
   modal.style.display = "flex";
-  
-  // Add animation
   modal.querySelector(".modal-card").style.animation = "slideUp 0.4s ease-out";
+}
+
+function closeModal() {
+  modal.style.display = "none";
+}
+
+function closeTagModal() {
+  tagModal.style.display = "none";
+}
+
+function closeManageTagsModal() {
+  manageTagsModal.style.display = "none";
 }
 
 /* DELETE CURRENT DIARY */
@@ -1013,13 +1332,8 @@ function deleteCurrent() {
   }
   
   db.ref("diaries/" + currentKey).remove().then(() => {
-    // Close modal
     modal.style.display = "none";
-    
-    // Show notification
     showNotification("Diary berhasil dihapus");
-    
-    // Reload diary list
     loadDiary();
   });
 }
@@ -1032,7 +1346,6 @@ function formatDate(dateString) {
 }
 
 function showNotification(message) {
-  // Create notification element
   const notification = document.createElement("div");
   notification.style.cssText = `
     position: fixed;
@@ -1049,10 +1362,8 @@ function showNotification(message) {
     max-width: 300px;
   `;
   notification.textContent = message;
-  
   document.body.appendChild(notification);
   
-  // Remove after 3 seconds
   setTimeout(() => {
     notification.style.animation = "fadeOut 0.3s ease-out";
     setTimeout(() => {
@@ -1061,7 +1372,7 @@ function showNotification(message) {
   }, 3000);
 }
 
-// Add CSS for fadeOut animation
+// Add CSS for animations
 const style = document.createElement('style');
 style.textContent = `
   @keyframes fadeOut {
@@ -1077,9 +1388,14 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Add event listeners for search and filter
+// Event listeners
 searchInput.addEventListener("input", loadDiary);
 filterTag.addEventListener("change", loadDiary);
+tagInput.addEventListener("keyup", function(event) {
+  if (event.key === "Enter") {
+    saveTag();
+  }
+});
 
 // Initialize
 loadTags();
