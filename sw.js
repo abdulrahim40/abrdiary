@@ -10,7 +10,6 @@ const urlsToCache = [
   'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'
 ];
 
-// Install service worker dan cache file penting
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,22 +18,18 @@ self.addEventListener('install', event => {
   );
 });
 
-// Bersihkan cache lama saat aktivasi
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cache => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
+          if (cache !== CACHE_NAME) return caches.delete(cache);
         })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Strategi: network first, fallback ke cache
 self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
