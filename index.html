@@ -4,8 +4,16 @@
 <meta charset="UTF-8">
 <title>ABRdiary v.3.4 - Ringkas & Kamera</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<!-- PWA: manifest & theme -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ABRdiary">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+/* ========== SEMUA CSS SAMA PERSIS SEPERTI SEBELUMNYA ========== */
 :root {
   --bg: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
   --card: #ffffff;
@@ -117,7 +125,6 @@ body {
 .card-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
 .card-subtitle { color: var(--text-light); font-size: 0.95rem; }
 
-/* Tanggal & waktu 1 baris */
 .datetime-row {
   display: flex;
   gap: 8px;
@@ -134,7 +141,6 @@ body {
   background: #f9fafb;
 }
 
-/* Tag dropdown */
 .tags-section {
   margin-bottom: 20px;
 }
@@ -162,7 +168,6 @@ body {
   margin-top: 0;
 }
 
-/* Image upload buttons - icon only */
 .image-upload-section {
   margin-bottom: 20px;
   padding: 8px 0;
@@ -196,7 +201,6 @@ body {
   margin-bottom: 16px;
 }
 
-/* Daftar diary tanpa thumbnail */
 .diary-entry {
   background: white;
   border: 1px solid var(--border);
@@ -214,12 +218,10 @@ body {
 
 .empty-state { text-align: center; padding: 40px 20px; color: var(--text-light); }
 
-/* Search row */
 .search-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
 .search-row { display: flex; gap: 8px; margin-bottom: 16px; }
 .search-input, .filter-select { padding: 10px 12px; border-radius: var(--radius-sm); border: 2px solid var(--border); font-size: 14px; background: #f9fafb; flex:1; }
 
-/* Modal camera sama seperti sebelumnya */
 #cameraModal {
   position: fixed;
   inset: 0;
@@ -253,7 +255,6 @@ body {
 }
 .camera-controls .btn { width: auto; flex: 1; margin: 0; padding: 8px; font-size: 14px; }
 
-/* Modal detail dan tag manager (tidak berubah) */
 #modal, #tagModal {
   position: fixed;
   inset: 0;
@@ -338,20 +339,16 @@ body {
         <div class="card-subtitle">Catatan singkatmu</div>
       </div>
     </div>
-    <!-- Tanggal & waktu 1 baris -->
     <div class="datetime-row">
       <input type="date" id="diaryDate" class="date-input">
       <input type="time" id="diaryTime" class="time-input">
     </div>
-    <!-- Tag dropdown -->
     <div class="tags-section">
       <label class="tags-label">Tag</label>
       <select id="tagSelect" class="tag-select"></select>
       <button class="btn manage-tags-btn" onclick="openTagManager()"><i class="fas fa-tags"></i> Kelola Tag</button>
     </div>
-    <!-- Isi diary -->
     <textarea id="diaryText" placeholder="Tulis isi diary..."></textarea>
-    <!-- Upload & Kamera (icon saja) -->
     <div class="image-upload-section">
       <div class="image-toolbar">
         <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
@@ -873,6 +870,15 @@ function showNotification(msg, type='success') {
 searchInput.addEventListener("input", loadDiary);
 filterTag.addEventListener("change", loadDiary);
 newTagInput.addEventListener("keyup", e => e.key === "Enter" && addNewTag());
+
+// =================== SERVICE WORKER REGISTRATION (PWA) ===================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('✅ Service Worker registered:', reg))
+      .catch(err => console.log('❌ SW registration failed:', err));
+  });
+}
 
 // =================== INIT ===================
 loadTags();
