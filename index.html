@@ -2,11 +2,10 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>ABRdiary v.3.2 - Dengan Kamera & Tag Fix</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ABRdiary v.3.3 - Kamera Depan/Belakang</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-/* ========== SAMA SEPERTI SEBELUMNYA, TAMBAHKAN STYLE UNTUK KAMERA ========== */
 :root {
   --bg: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
   --card: #ffffff;
@@ -156,27 +155,59 @@ body {
 .image-preview img { max-width: 100px; max-height: 100px; border-radius: 8px; object-fit: cover; border: 2px solid var(--border); }
 .image-info { font-size: 0.8rem; color: var(--text-light); }
 
-/* Camera styles */
-.camera-container {
-  margin-top: 12px;
+/* Camera Modal Overlay */
+#cameraModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
   display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
   flex-direction: column;
-  gap: 10px;
 }
-video {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 12px;
-  border: 2px solid var(--border);
+.camera-modal-content {
   background: #000;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
 }
-.camera-buttons {
+.camera-video-container {
+  background: #000;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  position: relative;
+}
+#cameraVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror untuk selfie, nanti disesuaikan */
+}
+.camera-controls {
   display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  background: #1f2937;
   gap: 10px;
+  flex-wrap: wrap;
 }
-.camera-buttons .btn {
+.camera-controls .btn {
   width: auto;
-  padding: 8px 16px;
+  flex: 1;
+  margin: 0;
+  padding: 10px;
+}
+#switchCameraBtn {
+  background: linear-gradient(to right, #f59e0b, #d97706);
+}
+#closeCameraModalBtn {
+  background: linear-gradient(to right, #6b7280, #4b5563);
+}
+#capturePhotoBtn {
+  background: linear-gradient(to right, #10b981, #059669);
 }
 
 #diaryText {
@@ -288,7 +319,7 @@ video {
   <div class="login-card">
     <div class="login-logo"><i class="fas fa-book"></i></div>
     <h1 class="login-title">ABRdiary</h1>
-    <div class="login-subtitle">Dengan Kamera & Cloudinary</div>
+    <div class="login-subtitle">Kamera Depan/Belakang & Cloudinary</div>
     <input type="password" id="passwordInput" class="login-input" placeholder="Masukkan password" autocomplete="off">
     <button class="btn" onclick="checkLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
     <div style="margin-top:20px; font-size:0.85rem; color:#9ca3af;"><i class="fas fa-info-circle"></i> Password: 12354</div>
@@ -326,13 +357,6 @@ video {
       <label class="tags-label"><i class="fas fa-image"></i> Foto/Gambar (maks 175kb, otomatis kompres)</label>
       <input type="file" id="imageInput" accept="image/jpeg,image/png,image/webp">
       <button type="button" id="cameraBtn" class="btn btn-small btn-camera"><i class="fas fa-camera"></i> Ambil Foto dari Kamera</button>
-      <div id="cameraContainer" class="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <div class="camera-buttons">
-          <button id="captureBtn" class="btn btn-small"><i class="fas fa-camera"></i> Jepret</button>
-          <button id="closeCameraBtn" class="btn btn-small btn-secondary"><i class="fas fa-times"></i> Tutup Kamera</button>
-        </div>
-      </div>
       <div id="imagePreview" class="image-preview"></div>
       <button type="button" id="removeImageBtn" class="btn btn-small btn-secondary" style="display:none;"><i class="fas fa-trash"></i> Hapus Gambar</button>
     </div>
@@ -354,6 +378,20 @@ video {
       <select id="filterTag" class="filter-select"><option value="">Semua Tag</option></select>
     </div>
     <div id="diaryList"><div class="empty-state"><i class="fas fa-book-open"></i><h3>Belum ada diary</h3><p>Mulai menulis diary pertama Anda!</p></div></div>
+  </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal">
+  <div class="camera-modal-content">
+    <div class="camera-video-container">
+      <video id="cameraVideo" autoplay playsinline></video>
+    </div>
+    <div class="camera-controls">
+      <button id="switchCameraBtn" class="btn"><i class="fas fa-sync-alt"></i> Ganti Kamera</button>
+      <button id="capturePhotoBtn" class="btn"><i class="fas fa-camera"></i> Jepret</button>
+      <button id="closeCameraModalBtn" class="btn"><i class="fas fa-times"></i> Tutup</button>
+    </div>
   </div>
 </div>
 
@@ -418,10 +456,12 @@ const db = firebase.database();
 let editingKey = null;
 let currentImageFile = null;
 let existingImageUrl = null;
-let editingTagName = "";  // <-- PERBAIKAN: deklarasi variabel untuk tag edit
+let editingTagName = "";
 
 // Camera variables
-let mediaStream = null;
+let cameraStream = null;
+let currentFacingMode = "user"; // 'user' = depan, 'environment' = belakang
+let cameraVideo = null;
 
 // =================== DATE/TIME ===================
 let manualDate = false, manualTime = false;
@@ -491,42 +531,73 @@ async function uploadToCloudinary(file) {
   return data.secure_url;
 }
 
-// =================== KAMERA ===================
-const cameraBtn = document.getElementById('cameraBtn');
-const cameraContainer = document.getElementById('cameraContainer');
-const video = document.getElementById('video');
-const captureBtn = document.getElementById('captureBtn');
-const closeCameraBtn = document.getElementById('closeCameraBtn');
+// =================== KAMERA DENGAN MODAL & SWITCH ===================
+const cameraModal = document.getElementById('cameraModal');
+const cameraVideoElem = document.getElementById('cameraVideo');
+const switchCameraBtn = document.getElementById('switchCameraBtn');
+const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+const closeCameraModalBtn = document.getElementById('closeCameraModalBtn');
 
 async function startCamera() {
+  // Stop existing stream if any
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+  }
+  const constraints = {
+    video: { facingMode: { exact: currentFacingMode } }
+  };
   try {
-    if (mediaStream) stopCamera();
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = mediaStream;
-    cameraContainer.style.display = 'flex';
+    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraVideoElem.srcObject = cameraStream;
+    // Mirror untuk kamera depan agar natural
+    if (currentFacingMode === 'user') {
+      cameraVideoElem.style.transform = 'scaleX(-1)';
+    } else {
+      cameraVideoElem.style.transform = 'scaleX(1)';
+    }
   } catch (err) {
-    alert('Tidak dapat mengakses kamera: ' + err.message);
+    // Fallback jika facingMode tidak tersedia
+    try {
+      const fallbackConstraints = { video: true };
+      cameraStream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+      cameraVideoElem.srcObject = cameraStream;
+      cameraVideoElem.style.transform = 'scaleX(1)';
+      currentFacingMode = 'unknown';
+    } catch (e) {
+      alert('Tidak dapat mengakses kamera: ' + e.message);
+    }
   }
 }
 
-function stopCamera() {
-  if (mediaStream) {
-    mediaStream.getTracks().forEach(track => track.stop());
-    mediaStream = null;
-  }
-  video.srcObject = null;
-  cameraContainer.style.display = 'none';
+function switchCamera() {
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  startCamera();
 }
 
-function capturePhoto() {
+async function capturePhoto() {
+  if (!cameraStream) return;
+  const videoTrack = cameraStream.getVideoTracks()[0];
+  const settings = videoTrack.getSettings();
+  const width = settings.width || 640;
+  const height = settings.height || 480;
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  // Jika kamera depan, jangan mirror lagi karena video sudah di-mirror di CSS
+  // Tapi untuk hasil foto, kita tidak perlu mirror agar sesuai asli
+  // Karena video element sudah mirror CSS, drawImage akan mengambil gambar dari video yang sudah mirror.
+  // Agar hasil foto tidak terbalik, kita perlu membaliknya lagi.
+  if (currentFacingMode === 'user') {
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(cameraVideoElem, 0, 0, width, height);
+  // Reset transform
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  
   canvas.toBlob(async (blob) => {
     const file = new File([blob], `camera_${Date.now()}.jpg`, { type: 'image/jpeg' });
-    // Kompresi otomatis
     showNotification('Mengompres foto...', 'info');
     try {
       const compressed = await compressImage(file, 175);
@@ -539,16 +610,32 @@ function capturePhoto() {
       imagePreview.innerHTML = `<img src="${previewUrl}" alt="Preview"><div class="image-info">Ukuran: ${(compressed.size/1024).toFixed(1)} kb (dari kamera)</div>`;
       removeImageBtn.style.display = 'inline-block';
       showNotification('Foto siap disimpan', 'success');
-      stopCamera();
+      closeCameraModal();
     } catch (err) {
       alert('Gagal memproses foto: ' + err.message);
     }
   }, 'image/jpeg', 0.9);
 }
 
-cameraBtn.addEventListener('click', startCamera);
-captureBtn.addEventListener('click', capturePhoto);
-closeCameraBtn.addEventListener('click', stopCamera);
+function openCameraModal() {
+  cameraModal.style.display = 'flex';
+  startCamera();
+}
+
+function closeCameraModal() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  cameraVideoElem.srcObject = null;
+  cameraModal.style.display = 'none';
+}
+
+// Event listeners
+document.getElementById('cameraBtn').addEventListener('click', openCameraModal);
+switchCameraBtn.addEventListener('click', switchCamera);
+capturePhotoBtn.addEventListener('click', capturePhoto);
+closeCameraModalBtn.addEventListener('click', closeCameraModal);
 
 // =================== HANDLE FILE UPLOAD ===================
 imageInput.addEventListener('change', async (e) => {
@@ -580,7 +667,7 @@ removeImageBtn.addEventListener('click', () => {
   showNotification('Gambar dihapus', 'info');
 });
 
-// =================== TAG MANAGEMENT (DIPERBAIKI) ===================
+// =================== TAG MANAGEMENT ===================
 function loadTags() {
   db.ref("tags").once("value").then(snapshot => renderTags(snapshot.val() || {}));
 }
@@ -639,9 +726,7 @@ window.addNewTag = () => {
     const tags = snapshot.val() || {};
     if (tags[newTag] && !editingTagName) return alert("Tag sudah ada!");
     if (editingTagName && editingTagName !== newTag) {
-      // Hapus tag lama jika nama berbeda
       delete tags[editingTagName];
-      // Update diary yang menggunakan tag lama
       updateDiariesTag(editingTagName, newTag);
     }
     tags[newTag] = true;
@@ -735,8 +820,8 @@ function resetForm() {
   formTitle.innerText = "Tulis Diary Baru";
   cancelEditBtn.style.display = "none";
   saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Diary';
-  // Stop camera if active
-  stopCamera();
+  // Tutup kamera jika masih terbuka
+  closeCameraModal();
   const n = new Date();
   if (!manualDate) diaryDate.value = n.toISOString().slice(0,10);
   if (!manualTime) diaryTime.value = n.toTimeString().slice(0,5);
